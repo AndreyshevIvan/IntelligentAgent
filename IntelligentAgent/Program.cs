@@ -12,17 +12,17 @@ namespace IntelligentAgent
         {
             try
             {
-                RandomAgent randomAgent = null;
+                StupidAgent agent = null;
                 MapManager mapManager = null;
 
-                InitGame(args, ref randomAgent, ref mapManager);
+                InitGame(args, ref agent, ref mapManager);
 
-                while (!mapManager.IsGameEnd())
+                while (mapManager.UpdateMap())
                 {
-                    randomAgent.DoMove();
+                    agent.DoMove();
                 }
 
-                Console.WriteLine("Game end.");
+                Console.WriteLine(mapManager.endLog);
             }
             catch (Exception e)
             {
@@ -30,15 +30,17 @@ namespace IntelligentAgent
             }
         }
 
-        static void InitGame(string[] programArgs, ref RandomAgent agent, ref MapManager mapManager)
+        static void InitGame(string[] programArgs, ref StupidAgent agent, ref MapManager mapManager)
         {
             if (programArgs.Length < ARGS_COUNT)
             {
+                // Commented only for debug
                 //throw new GameException(EMessage.ARGS_COUNT);
             }
 
             try
             {
+                // Commented only for debug
                 //int.Parse(programArgs[0]);
                 //int.Parse(programArgs[1]);
             }
@@ -47,8 +49,9 @@ namespace IntelligentAgent
                 throw new GameException(EMessage.INVALID_ID);
             }
 
+            // Use args[0] and args[1] as arguments if start with arguments
             mapManager = MapManager.Create("32", "3568");
-            agent = RandomAgent.Create(mapManager);
+            agent = StupidAgent.Create(mapManager);
         }
 
         private static readonly int ARGS_COUNT = 2;

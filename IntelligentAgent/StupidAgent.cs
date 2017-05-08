@@ -6,14 +6,14 @@ using System.Threading.Tasks;
 
 namespace IntelligentAgent
 {
-    class RandomAgent : Agent
+    class StupidAgent : Agent
     {
-        static public RandomAgent Create(IMapPhysics mapPhysics)
+        static public StupidAgent Create(IMapPhysics mapPhysics)
         {
-            return new RandomAgent(mapPhysics);
+            return new StupidAgent(mapPhysics);
         }
 
-        private RandomAgent(IMapPhysics mapPhysics)
+        private StupidAgent(IMapPhysics mapPhysics)
             : base(mapPhysics)
         {
         }

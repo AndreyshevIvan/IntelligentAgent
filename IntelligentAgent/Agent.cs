@@ -34,7 +34,7 @@ namespace IntelligentAgent
             HandleNewCave(m_mapPhysics.cave);
             HandleWorld(m_mapPhysics.world);
             Move move = CalculateMove();
-            m_mapPhysics.DoMove(move.passive, move.active);
+            m_mapPhysics.SetMove(move);
         }
 
         protected abstract void HandleNewCave(Cave newCave);

@@ -8,7 +8,7 @@ namespace IntelligentAgent
 {
     interface IMapPhysics
     {
-        void DoMove(PassiveAct passive, ActiveAct active);
+        void SetMove(Move move);
 
         Cave cave { get; }
         World world { get; }

@@ -1,11 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Net;
 using System.IO;
-using Newtonsoft.Json;
 
 namespace IntelligentAgent
 {
@@ -15,20 +11,35 @@ namespace IntelligentAgent
         {
             return new MapManager(idGame, idUser);
         }
-        public void DoMove(PassiveAct passive, ActiveAct active)
+        public void SetMove(Move move)
         {
-            string actInfo = ToRequest(passive, active);
-            string requestUrl = m_request + actInfo;
-            UpdateData(requestUrl);
-            UpdateCave();
-            UpdateWorld();
+            m_passive = move.passive;
+            m_active = move.active;
         }
-        public bool IsGameEnd()
+        public bool UpdateMap()
         {
+            string actInfo = ToRequest(m_passive, m_active);
+            string requestUrl = m_request + actInfo;
+            m_data = InitData(requestUrl);
+
+            if (!m_data.isValid)
+            {
+                return false;
+            }
+
+            m_cave = m_data.currentCave;
+            m_world = m_data.currentWorld;
+
             return true;
         }
         public Cave cave { get { return m_cave; } }
         public World world { get { return m_world; } }
+        public string url { get { return "https://www.mooped.net"; } }
+        public string requestRoot
+        {
+            get { return "/local/its/index.php?module=game&action=agentaction&"; }
+        }
+        public string endLog { get { return m_data.endLog; } }
 
         protected MapManager(string idGame, string idUser)
         {
@@ -36,15 +47,18 @@ namespace IntelligentAgent
             gameInfo += "userid=" + idUser + "&";
             m_request = url + requestRoot + gameInfo;
 
-            DoMove(PassiveAct.NONE, ActiveAct.NONE);
+            m_passive = PassiveAct.NONE;
+            m_active = ActiveAct.NONE;
+
+            UpdateMap();
         }
 
-        private void UpdateData(string requestUrl)
+        private MapData InitData(string requestUrl)
         {
             WebRequest request = WebRequest.Create(requestUrl);
             Stream objStream = request.GetResponse().GetResponseStream();
             StreamReader objReader = new StreamReader(objStream);
-            string jsonStr = "";
+            string json = "";
             string sLine = "";
 
             while (sLine != null)
@@ -52,24 +66,11 @@ namespace IntelligentAgent
                 sLine = objReader.ReadLine();
                 if (sLine != null)
                 {
-                    jsonStr += sLine;
-                    Console.WriteLine(sLine);
+                    json += sLine;
                 }
             }
 
-            ParseData(jsonStr);
-        }
-        private void UpdateCave()
-        {
-            m_cave = new Cave();
-        }
-        private void UpdateWorld()
-        {
-            m_world = new World();
-        }
-        private void ParseData(string jsonStr)
-        {
-            m_data = JsonConvert.DeserializeObject<Dictionary<string, dynamic>>(jsonStr);
+            return new MapData(json);
         }
         private string ToRequest(PassiveAct passive, ActiveAct active)
         {
@@ -112,16 +113,9 @@ namespace IntelligentAgent
             return act;
         }
 
-        public string url
-        {
-            get { return "https://www.mooped.net"; }
-        }
-        public string requestRoot
-        {
-            get { return "/local/its/index.php?module=game&action=agentaction&"; }
-        }
-
-        private Dictionary<string, dynamic> m_data;
+        private PassiveAct m_passive;
+        private ActiveAct m_active;
+        private MapData m_data;
         private string m_request;
         private Cave m_cave;
         private World m_world;
