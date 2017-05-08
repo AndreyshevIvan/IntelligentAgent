@@ -13,9 +13,16 @@ namespace IntelligentAgent
             try
             {
                 RandomAgent randomAgent = null;
-                RequestManager requestManager = null;
+                MapManager mapManager = null;
 
-                InitGame(args, randomAgent, requestManager);
+                InitGame(args, ref randomAgent, ref mapManager);
+
+                while (!mapManager.IsGameEnd())
+                {
+                    randomAgent.DoMove();
+                }
+
+                Console.WriteLine("Game end.");
             }
             catch (Exception e)
             {
@@ -23,18 +30,25 @@ namespace IntelligentAgent
             }
         }
 
-        static void InitGame(string[] programArgs, RandomAgent agent, RequestManager netManager)
+        static void InitGame(string[] programArgs, ref RandomAgent agent, ref MapManager mapManager)
         {
             if (programArgs.Length < ARGS_COUNT)
             {
                 throw new GameException(EMessage.ARGS_COUNT);
             }
 
-            int idGame = int.Parse(programArgs[0]);
-            int idUser = int.Parse(programArgs[1]);
+            try
+            {
+                int.Parse(programArgs[0]);
+                int.Parse(programArgs[1]);
+            }
+            catch (Exception)
+            {
+                throw new GameException(EMessage.INVALID_ID);
+            }
 
-            netManager = RequestManager.Create(idGame, idUser);
-            agent = Agent.CreateRandom();
+            mapManager = MapManager.Create("1", "2");
+            agent = RandomAgent.Create(mapManager);
         }
 
         private static readonly int ARGS_COUNT = 2;

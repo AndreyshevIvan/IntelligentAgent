@@ -8,24 +8,29 @@ using System.IO;
 
 namespace IntelligentAgent
 {
-    class RequestManager
+    class MapManager : IMapPhysics
     {
-        public static RequestManager Create(int idGame, int idUser)
+        static public MapManager Create(string idGame, string idUser)
         {
-            return new RequestManager(idGame, idUser);
+            return new MapManager(idGame, idUser);
         }
-        public void GetInstructions(PassiveAct passive, ActiveAct active)
+        public void DoMove(PassiveAct passive, ActiveAct active)
         {
             string actInfo = CreateAct(passive, active);
-
-
         }
-
-        private RequestManager(int idGame, int idUser)
+        public bool IsGameEnd()
         {
-            m_gameInfo = "gameid=" + idGame.ToString() + "&";
-            m_gameInfo += "userid=" + idUser.ToString() + "&";
+            return true;
         }
+
+        protected MapManager(string idGame, string idUser)
+        {
+            m_gameInfo = "gameid=" + idGame + "&";
+            m_gameInfo += "userid=" + idUser + "&";
+
+            DoMove(PassiveAct.NONE, ActiveAct.NONE);
+        }
+
         private string CreateAct(PassiveAct passive, ActiveAct active)
         {
             string act = "act=";

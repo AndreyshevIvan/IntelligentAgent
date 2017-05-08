@@ -17,5 +17,6 @@ namespace IntelligentAgent
     static class EMessage
     {
         static public string ARGS_COUNT = "Invalid arguments count.\nUse: <program> <GAMEID> <USERID>\n";
+        static public string INVALID_ID = "Invalid id! Use id from mooped.net";
     }
 }

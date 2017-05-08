@@ -6,7 +6,10 @@ using System.Threading.Tasks;
 
 namespace IntelligentAgent
 {
-    class IMapPhysics
+    interface IMapPhysics
     {
+        void DoMove(PassiveAct passive, ActiveAct active);
+        //Cave GetCaveInfo();
+        //World GetWorldInfo();
     }
 }

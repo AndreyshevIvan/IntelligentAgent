@@ -22,15 +22,15 @@ namespace IntelligentAgent
         TAKE,
     }
 
-    class Agent
+    abstract class Agent
     {
-        static public RandomAgent CreateRandom()
+        protected Agent(IMapPhysics mapPhysics)
         {
-            return new RandomAgent();
+            m_mapPhysics = mapPhysics;
         }
 
-        protected Agent()
-        {
-        }
+        public abstract void DoMove();
+
+        protected IMapPhysics m_mapPhysics;
     }
 }
