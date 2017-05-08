@@ -29,7 +29,17 @@ namespace IntelligentAgent
             m_mapPhysics = mapPhysics;
         }
 
-        public abstract void DoMove();
+        public virtual void DoMove()
+        {
+            HandleNewCave(m_mapPhysics.cave);
+            HandleWorld(m_mapPhysics.world);
+            Move move = CalculateMove();
+            m_mapPhysics.DoMove(move.passive, move.active);
+        }
+
+        protected abstract void HandleNewCave(Cave newCave);
+        protected abstract void HandleWorld(World world);
+        protected abstract Move CalculateMove();
 
         protected IMapPhysics m_mapPhysics;
     }

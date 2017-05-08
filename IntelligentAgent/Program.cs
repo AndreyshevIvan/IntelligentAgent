@@ -34,20 +34,20 @@ namespace IntelligentAgent
         {
             if (programArgs.Length < ARGS_COUNT)
             {
-                throw new GameException(EMessage.ARGS_COUNT);
+                //throw new GameException(EMessage.ARGS_COUNT);
             }
 
             try
             {
-                int.Parse(programArgs[0]);
-                int.Parse(programArgs[1]);
+                //int.Parse(programArgs[0]);
+                //int.Parse(programArgs[1]);
             }
             catch (Exception)
             {
                 throw new GameException(EMessage.INVALID_ID);
             }
 
-            mapManager = MapManager.Create("1", "2");
+            mapManager = MapManager.Create("32", "3568");
             agent = RandomAgent.Create(mapManager);
         }
 

@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Net;
 using System.IO;
+using Newtonsoft.Json;
 
 namespace IntelligentAgent
 {
@@ -16,22 +17,61 @@ namespace IntelligentAgent
         }
         public void DoMove(PassiveAct passive, ActiveAct active)
         {
-            string actInfo = CreateAct(passive, active);
+            string actInfo = ToRequest(passive, active);
+            string requestUrl = m_request + actInfo;
+            UpdateData(requestUrl);
+            UpdateCave();
+            UpdateWorld();
         }
         public bool IsGameEnd()
         {
             return true;
         }
+        public Cave cave { get { return m_cave; } }
+        public World world { get { return m_world; } }
 
         protected MapManager(string idGame, string idUser)
         {
-            m_gameInfo = "gameid=" + idGame + "&";
-            m_gameInfo += "userid=" + idUser + "&";
+            string gameInfo = "gameid=" + idGame + "&";
+            gameInfo += "userid=" + idUser + "&";
+            m_request = url + requestRoot + gameInfo;
 
             DoMove(PassiveAct.NONE, ActiveAct.NONE);
         }
 
-        private string CreateAct(PassiveAct passive, ActiveAct active)
+        private void UpdateData(string requestUrl)
+        {
+            WebRequest request = WebRequest.Create(requestUrl);
+            Stream objStream = request.GetResponse().GetResponseStream();
+            StreamReader objReader = new StreamReader(objStream);
+            string jsonStr = "";
+            string sLine = "";
+
+            while (sLine != null)
+            {
+                sLine = objReader.ReadLine();
+                if (sLine != null)
+                {
+                    jsonStr += sLine;
+                    Console.WriteLine(sLine);
+                }
+            }
+
+            ParseData(jsonStr);
+        }
+        private void UpdateCave()
+        {
+            m_cave = new Cave();
+        }
+        private void UpdateWorld()
+        {
+            m_world = new World();
+        }
+        private void ParseData(string jsonStr)
+        {
+            m_data = JsonConvert.DeserializeObject<Dictionary<string, dynamic>>(jsonStr);
+        }
+        private string ToRequest(PassiveAct passive, ActiveAct active)
         {
             string act = "act=";
 
@@ -72,8 +112,18 @@ namespace IntelligentAgent
             return act;
         }
 
-        private const string m_url = "https://www.mooped.net";
-        private const string m_requestRoot = "/local/its/index.php?module=game&action=agentaction&";
-        private string m_gameInfo = "gameid=0&userid=0&";
+        public string url
+        {
+            get { return "https://www.mooped.net"; }
+        }
+        public string requestRoot
+        {
+            get { return "/local/its/index.php?module=game&action=agentaction&"; }
+        }
+
+        private Dictionary<string, dynamic> m_data;
+        private string m_request;
+        private Cave m_cave;
+        private World m_world;
     }
 }

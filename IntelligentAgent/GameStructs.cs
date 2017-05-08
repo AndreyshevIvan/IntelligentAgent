@@ -6,20 +6,33 @@ using System.Threading.Tasks;
 
 namespace IntelligentAgent
 {
-    /*
     struct Cave
     {
-        int row;
-        int coll;
-        bool isGold;
-        bool isMonster;
-        bool isHole;
-        bool isWind;
-        bool isBones;
+        /*
+        public int row;
+        public int coll;
+        public bool isGold;
+        public bool isMonster;
+        public bool isHole;
+        public bool isWind;
+        public bool isBones;
+        */
     }
 
     struct World
     {
 
-    }*/
+    }
+
+    struct Move
+    {
+        public Move(PassiveAct passive, ActiveAct active)
+        {
+            this.passive = passive;
+            this.active = active;
+        }
+
+        public PassiveAct passive;
+        public ActiveAct active;
+    }
 }
