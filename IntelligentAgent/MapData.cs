@@ -7,6 +7,7 @@ namespace IntelligentAgent
         public MapData(string mapJson)
         {
             // TODO: parse string with Newtonsoft.Json to class properties
+            // Ready to start
 
             m_cave = new Cave(); // Only for debug
             m_world = new World(); // Only for debug
