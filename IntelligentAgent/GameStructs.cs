@@ -3,25 +3,52 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace IntelligentAgent
 {
     struct Cave
     {
-        /*
-        public int row;
-        public int coll;
-        public bool isGold;
-        public bool isMonster;
-        public bool isHole;
-        public bool isWind;
-        public bool isBones;
-        */
+        [JsonProperty(PropertyName = "rowN")]
+        public int row { get; set; }
+
+        [JsonProperty(PropertyName = "colN")]
+        public int coll { get; set; }
+
+        [JsonProperty(PropertyName = "isGold")]
+        public bool isGold { get; set; }
+
+        [JsonProperty(PropertyName = "isMonster")]
+        public bool isMonster { get; set; }
+
+        [JsonProperty(PropertyName = "isHole")]
+        public bool isHole { get; set; }
+
+        [JsonProperty(PropertyName = "isWind")]
+        public bool isWind { get; set; }
+
+        [JsonProperty(PropertyName = "isBones")]
+        public bool isBone { get; set; }
     }
 
+
+    // ПРОБЛЕМА
+    // в твоей архитектуре я не вижу обновления состояний Агента, исключительно обновление Мира
+    // есть вариант впихнуть knowCaves в структуру World, тупо добавить public IList<Cave> knowCaves { get; set; }
+    // и в MapData.cs прописать m_world.knowCaves = knowCaves
     struct World
     {
+        [JsonProperty(PropertyName = "newcaveopened")]
+        public int caveOpenedCount { get; set; }
 
+        [JsonProperty(PropertyName = "isgoldfinded")]
+        public bool isGoldFinded { get; set; }
+
+        [JsonProperty(PropertyName = "ismonsteralive")]
+        public bool isMonsterAlive { get; set; }
+
+        [JsonProperty(PropertyName = "tiktak")]
+        public int tiktak { get; set; }
     }
 
     struct Move

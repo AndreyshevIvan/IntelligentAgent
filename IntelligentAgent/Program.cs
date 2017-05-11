@@ -50,7 +50,7 @@ namespace IntelligentAgent
             }
 
             // Use args[0] and args[1] as arguments if start with arguments
-            mapManager = MapManager.Create("32", "3568");
+            mapManager = MapManager.Create("37", "286");
             agent = StupidAgent.Create(mapManager);
         }
 
