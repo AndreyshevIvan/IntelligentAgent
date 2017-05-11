@@ -7,6 +7,39 @@ using Newtonsoft.Json;
 
 namespace IntelligentAgent
 {
+
+    enum DirList
+    {
+        Up, Right, Down, Left
+    }
+
+    struct AgentInfo
+    {
+        [JsonProperty(PropertyName = "arrowcount")]
+        public int arrowCount { get; set; }
+
+        [JsonProperty(PropertyName = "aname")]
+        public string agentName { get; set; }
+
+        [JsonProperty(PropertyName = "dir")]
+        public DirList currentDir { get; set; }
+
+        [JsonProperty(PropertyName = "legscount")]
+        public int legsCount { get; set; }
+
+        [JsonProperty(PropertyName = "isagentalive")]
+        public string isAgentAlive { get; set; }
+
+        [JsonProperty(PropertyName = "havegold")]
+        public string haveGold { get; set; }
+
+        [JsonProperty(PropertyName = "id")]
+        public int id { get; set; }
+
+        [JsonProperty(PropertyName = "gaid")]
+        public int gameId { get; set; }
+    }
+
     struct Cave
     {
         [JsonProperty(PropertyName = "rowN")]
@@ -29,6 +62,11 @@ namespace IntelligentAgent
 
         [JsonProperty(PropertyName = "isBones")]
         public bool isBone { get; set; }
+
+        [JsonProperty(PropertyName = "isVisiable")]
+        public string isVisiable { get; set; }
+
+        public List<DirList> aviableDir { get; set; }
     }
 
 
@@ -39,13 +77,13 @@ namespace IntelligentAgent
     struct World
     {
         [JsonProperty(PropertyName = "newcaveopened")]
-        public int caveOpenedCount { get; set; }
+        public string caveOpenedCount { get; set; }
 
         [JsonProperty(PropertyName = "isgoldfinded")]
-        public bool isGoldFinded { get; set; }
+        public string isGoldFinded { get; set; }
 
         [JsonProperty(PropertyName = "ismonsteralive")]
-        public bool isMonsterAlive { get; set; }
+        public string isMonsterAlive { get; set; }
 
         [JsonProperty(PropertyName = "tiktak")]
         public int tiktak { get; set; }
@@ -79,6 +117,15 @@ namespace IntelligentAgent
             }
 
             return m_map[row, coll];
+        }
+
+        public void SetCave(Cave cave)
+        {
+            if (cave.row < 0 || cave.row >= m_rowsCount || cave.coll < 0 || cave.coll >= m_collsCount)
+            {
+                throw new GameException("Cave adress overflow when get from caves map");
+            }
+            m_map[cave.row, cave.coll] = cave;
         }
 
         private Cave[,] m_map;
