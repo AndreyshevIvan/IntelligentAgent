@@ -10,7 +10,10 @@ namespace IntelligentAgent
 
     enum DirList
     {
-        Up, Right, Down, Left
+        UP,
+        RIGHT,
+        DOWN,
+        LEFT,
     }
 
     struct AgentInfo
@@ -113,7 +116,7 @@ namespace IntelligentAgent
         {
             if (row < 0 || row >= m_rowsCount || coll < 0 || coll >= m_collsCount)
             {
-                throw new GameException("Cave adress overflow when get from caves map");
+                throw new GameException(EMessage.CAVE_ADRESS_OVERFLOW);
             }
 
             return m_map[row, coll];
@@ -121,9 +124,12 @@ namespace IntelligentAgent
 
         public void SetCave(Cave cave)
         {
-            if (cave.row < 0 || cave.row >= m_rowsCount || cave.coll < 0 || cave.coll >= m_collsCount)
+            int row = cave.row;
+            int coll = cave.coll;
+
+            if (row < 0 || row >= m_rowsCount || coll < 0 || coll >= m_collsCount)
             {
-                throw new GameException("Cave adress overflow when get from caves map");
+                throw new GameException(EMessage.CAVE_ADRESS_OVERFLOW);
             }
             m_map[cave.row, cave.coll] = cave;
         }

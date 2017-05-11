@@ -12,5 +12,6 @@ namespace IntelligentAgent
 
         Cave cave { get; }
         World world { get; }
+        AgentInfo agentInfo { get; }
     }
 }

@@ -6,8 +6,6 @@ using System.Threading.Tasks;
 
 namespace IntelligentAgent
 {
-
-
     enum PassiveAct
     {
         NONE,

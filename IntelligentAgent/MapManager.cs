@@ -20,26 +20,28 @@ namespace IntelligentAgent
         {
             string actInfo = ToRequest(m_passive, m_active);
             string requestUrl = m_request + actInfo;
-            m_data = InitData(requestUrl);
 
-            if (!m_data.isValid)
+            try
             {
+                m_data = UpdateData(requestUrl);
+            }
+            catch (Exception e)
+            {
+                m_endLog = e.Message;
                 return false;
             }
 
-            m_cave = m_data.currentCave;
-            m_world = m_data.currentWorld;
-
             return true;
         }
-        public Cave cave { get { return m_cave; } }
-        public World world { get { return m_world; } }
+        public Cave cave { get { return m_data.currentCave; } }
+        public World world { get { return m_data.currentWorld; } }
+        public AgentInfo agentInfo { get { return m_data.currentAgentInfo; } }
         public string url { get { return "https://www.mooped.net"; } }
         public string requestRoot
         {
             get { return "/local/its/index.php?module=game&action=agentaction&"; }
         }
-        public string endLog { get { return m_data.endLog; } }
+        public string endLog { get { return m_endLog; } }
 
         protected MapManager(string idGame, string idUser)
         {
@@ -53,7 +55,7 @@ namespace IntelligentAgent
             UpdateMap();
         }
 
-        private MapData InitData(string requestUrl)
+        private MapData UpdateData(string requestUrl)
         {
             WebRequest request = WebRequest.Create(requestUrl);
             Stream objStream = request.GetResponse().GetResponseStream();
@@ -117,7 +119,6 @@ namespace IntelligentAgent
         private ActiveAct m_active;
         private MapData m_data;
         private string m_request;
-        private Cave m_cave;
-        private World m_world;
+        private string m_endLog;
     }
 }

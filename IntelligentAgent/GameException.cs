@@ -18,5 +18,6 @@ namespace IntelligentAgent
     {
         static public string ARGS_COUNT = "Invalid arguments count.\nUse: <program> <GAMEID> <USERID>\n";
         static public string INVALID_ID = "Invalid id! Use id from mooped.net";
+        static public string CAVE_ADRESS_OVERFLOW = "Cave adress overflow when get from caves map";
     }
 }

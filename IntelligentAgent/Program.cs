@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.IO;
 
 namespace IntelligentAgent
 {
@@ -12,10 +9,10 @@ namespace IntelligentAgent
         {
             try
             {
-                StupidAgent agent = null;
+                Agent agent = null;
                 MapManager mapManager = null;
 
-                InitGame(args, ref agent, ref mapManager);
+                InitGame(ref agent, ref mapManager);
 
                 while (mapManager.UpdateMap())
                 {
@@ -30,30 +27,24 @@ namespace IntelligentAgent
             }
         }
 
-        static void InitGame(string[] programArgs, ref StupidAgent agent, ref MapManager mapManager)
+        static void InitGame(ref Agent agent, ref MapManager mapManager)
         {
-            if (programArgs.Length < ARGS_COUNT)
-            {
-                // Commented only for debug
-                //throw new GameException(EMessage.ARGS_COUNT);
-            }
+            StreamReader reader = new StreamReader("../../config.txt");
+            int idGame = 0;
+            int idUser = 0;
 
             try
             {
-                // Commented only for debug
-                //int.Parse(programArgs[0]);
-                //int.Parse(programArgs[1]);
+                idGame = int.Parse(reader.ReadLine());
+                idUser = int.Parse(reader.ReadLine());
             }
-            catch (Exception)
+            catch
             {
                 throw new GameException(EMessage.INVALID_ID);
             }
 
-            // Use args[0] and args[1] as arguments if start with arguments
-            mapManager = MapManager.Create("37", "286");
-            agent = StupidAgent.Create(mapManager);
+            mapManager = MapManager.Create(idGame.ToString(), idUser.ToString());
+            agent = RandomAgent.Create(mapManager);
         }
-
-        private static readonly int ARGS_COUNT = 2;
     }
 }
