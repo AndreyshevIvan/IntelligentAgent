@@ -8,27 +8,18 @@ namespace IntelligentAgent
 {
     class MapData
     {
-        public MapData(string mapJson)
+        public MapData(JToken mapInfo)
         {
-            JObject JsonGameInfo = JObject.Parse(mapJson);
+            m_currentCave = mapInfo["currentcave"].ToObject<Cave>();
+            m_world = mapInfo["worldinfo"].ToObject<World>();
+            m_agent = mapInfo["iagent"].ToObject<AgentInfo>();
 
-            JToken mapInfo = JsonGameInfo["text"];
-            string errorType = JsonGameInfo["error_type"].ToString();
-
-            if (errorType == "error")
-            {
-                throw new GameException(JsonGameInfo["error"].ToString());
-            }
-
-            m_currentCave = JsonGameInfo["text"]["currentcave"].ToObject<Cave>();
-            m_world = JsonGameInfo["text"]["worldinfo"].ToObject<World>();
-            m_agent = JsonGameInfo["text"]["iagent"].ToObject<AgentInfo>();
             InitCavesMap(mapInfo);
         }
 
         public bool GetOpenWorld(ref CavesMap cavesMap)
         {
-            if (!m_isOpenWorld || !isValid)
+            if (!m_isOpenWorld)
             {
                 return false;
             }
@@ -46,6 +37,12 @@ namespace IntelligentAgent
         private void InitCavesMap(JToken mapInfo)
         {
             JToken caves = mapInfo["iagent"]["knowCaves"];
+            if (caves.Count<JToken>() == 0)
+            {
+                m_isOpenWorld = false;
+                return;
+            }
+
             List<JToken> JsonKnowCaves = caves.Children().Children().ToList();
             m_cavesMap = new List<Cave>();
 
@@ -63,13 +60,11 @@ namespace IntelligentAgent
             }
         }
 
-        public bool isValid { get { return m_isValid; } }
         public Cave currentCave { get { return m_currentCave; } }
         public List<Cave> knowCaves { get { return m_cavesMap; } }
         public World currentWorld { get { return m_world; } }
         public AgentInfo currentAgentInfo { get { return m_agent; } }
 
-        private bool m_isValid = true;
         private bool m_isOpenWorld = false;
         private Cave m_currentCave;
         private List<Cave> m_cavesMap;

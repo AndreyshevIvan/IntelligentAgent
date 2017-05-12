@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Net;
 using System.IO;
+using Newtonsoft.Json.Linq;
 
 namespace IntelligentAgent
 {
@@ -57,6 +58,22 @@ namespace IntelligentAgent
 
         private MapData UpdateData(string requestUrl)
         {
+            JObject GameInfo = GetMapJson(requestUrl);
+            string errorType = GameInfo["error_type"].ToString();
+
+            if (errorType == "notification")
+            {
+                return m_data;
+            }
+            else if (errorType == "error")
+            {
+                throw new GameException(GameInfo["error"].ToString());
+            }
+
+            return new MapData(GameInfo["text"]);
+        }
+        private JObject GetMapJson(string requestUrl)
+        {
             WebRequest request = WebRequest.Create(requestUrl);
             Stream objStream = request.GetResponse().GetResponseStream();
             StreamReader objReader = new StreamReader(objStream);
@@ -72,7 +89,7 @@ namespace IntelligentAgent
                 }
             }
 
-            return new MapData(json);
+            return JObject.Parse(json);
         }
         private string ToRequest(PassiveAct passive, ActiveAct active)
         {
