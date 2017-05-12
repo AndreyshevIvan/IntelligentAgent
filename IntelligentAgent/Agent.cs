@@ -33,6 +33,7 @@ namespace IntelligentAgent
         {
             HandleNewCave(m_mapPhysics.cave);
             HandleWorld(m_mapPhysics.world);
+            m_info = m_mapPhysics.agentInfo;
             Move move = CalculateMove();
             m_mapPhysics.SetMove(move);
         }
@@ -42,5 +43,6 @@ namespace IntelligentAgent
         protected abstract Move CalculateMove();
 
         protected IMapPhysics m_mapPhysics;
+        protected AgentInfo m_info;
     }
 }

@@ -60,14 +60,16 @@ namespace IntelligentAgent
         {
             JObject GameInfo = GetMapJson(requestUrl);
             string errorType = GameInfo["error_type"].ToString();
+            string errorMsg = GameInfo["error"].ToString();
 
             if (errorType == "notification")
             {
+                Console.WriteLine(errorMsg);
                 return m_data;
             }
             else if (errorType == "error")
             {
-                throw new GameException(GameInfo["error"].ToString());
+                throw new GameException(errorMsg);
             }
 
             return new MapData(GameInfo["text"]);

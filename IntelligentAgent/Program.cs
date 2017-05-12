@@ -29,7 +29,7 @@ namespace IntelligentAgent
 
         static void InitGame(ref Agent agent, ref MapManager mapManager)
         {
-            StreamReader reader = new StreamReader("../../config.txt");
+            StreamReader reader = new StreamReader("config.txt");
             int idGame = 0;
             int idUser = 0;
 
@@ -44,7 +44,7 @@ namespace IntelligentAgent
             }
 
             mapManager = MapManager.Create(idGame.ToString(), idUser.ToString());
-            agent = RandomAgent.Create(mapManager);
+            agent = StupidAgent.Create(mapManager);
         }
     }
 }
