@@ -19,7 +19,7 @@ namespace IntelligentAgent
         }
         protected override void HandleNewCave(Cave newCave)
         {
-
+            
         }
         protected override void HandleWorld(World world)
         {

@@ -7,7 +7,6 @@ using Newtonsoft.Json;
 
 namespace IntelligentAgent
 {
-
     enum DirList
     {
         UP,
@@ -72,11 +71,6 @@ namespace IntelligentAgent
         public List<DirList> aviableDir { get; set; }
     }
 
-
-    // ПРОБЛЕМА
-    // в твоей архитектуре я не вижу обновления состояний Агента, исключительно обновление Мира
-    // есть вариант впихнуть knowCaves в структуру World, тупо добавить public IList<Cave> knowCaves { get; set; }
-    // и в MapData.cs прописать m_world.knowCaves = knowCaves
     struct World
     {
         [JsonProperty(PropertyName = "newcaveopened")]
