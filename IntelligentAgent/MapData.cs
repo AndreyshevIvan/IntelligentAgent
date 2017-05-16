@@ -16,7 +16,6 @@ namespace IntelligentAgent
 
             InitCavesMap(mapInfo);
         }
-
         public bool GetOpenWorld(ref CavesMap cavesMap)
         {
             if (!m_isOpenWorld)
@@ -25,13 +24,24 @@ namespace IntelligentAgent
             }
 
             cavesMap = new CavesMap(4, 4);
-
-            // Add caves about which we know
-            foreach (Cave cave in knowCaves)
+            foreach (Cave cave in m_cavesMap)
             {
                 cavesMap.SetCave(cave);
             }
+
             return true;
+        }
+        public bool GetMonsterCave(ref Cave monsterCave)
+        {
+            foreach(Cave cave in m_cavesMap)
+            {
+                if (cave.isMonster)
+                {
+                    monsterCave = cave;
+                    return true;
+                }
+            }
+            return false;
         }
 
         private void InitCavesMap(JToken mapInfo)
@@ -50,10 +60,10 @@ namespace IntelligentAgent
             {
                 Cave searchCave = cave.ToObject<Cave>();
                 List<JToken> searchCaveDir = cave["dirList"].ToList();
-                searchCave.aviableDir = new List<DirList>();
+                searchCave.aviableDir = new List<Direction>();
                 foreach (JToken direction in searchCaveDir)
                 {
-                    DirList searchDir = direction.ToObject<DirList>();
+                    Direction searchDir = direction.ToObject<Direction>();
                     searchCave.aviableDir.Add(searchDir);
                 }
                 m_cavesMap.Add(searchCave);
@@ -61,7 +71,6 @@ namespace IntelligentAgent
         }
 
         public Cave currentCave { get { return m_currentCave; } }
-        public List<Cave> knowCaves { get { return m_cavesMap; } }
         public World currentWorld { get { return m_world; } }
         public AgentInfo currentAgentInfo { get { return m_agent; } }
 

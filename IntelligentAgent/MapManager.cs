@@ -17,6 +17,14 @@ namespace IntelligentAgent
             m_passive = move.passive;
             m_active = move.active;
         }
+        public bool GetOpenWorld(ref CavesMap cavesMap)
+        {
+            return m_data.GetOpenWorld(ref cavesMap);
+        }
+        public bool GetMonsterCave(ref Cave monsterCave)
+        {
+            return m_data.GetMonsterCave(ref monsterCave);
+        }
         public bool UpdateMap()
         {
             string actInfo = ToRequest(m_passive, m_active);
@@ -33,6 +41,30 @@ namespace IntelligentAgent
             }
 
             return true;
+        }
+        public int monsterRow
+        {
+            get
+            {
+                Cave cave = new Cave();
+                if (!GetMonsterCave(ref cave))
+                {
+                    throw new GameException("IMapPhysics: monster not found");
+                }
+                return cave.row;
+            }
+        }
+        public int monsterColl
+        {
+            get
+            {
+                Cave cave = new Cave();
+                if (!GetMonsterCave(ref cave))
+                {
+                    throw new GameException("IMapPhysics: monster not found");
+                }
+                return cave.coll;
+            }
         }
         public Cave cave { get { return m_data.currentCave; } }
         public World world { get { return m_data.currentWorld; } }

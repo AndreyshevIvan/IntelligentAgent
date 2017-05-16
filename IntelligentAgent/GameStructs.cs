@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using Newtonsoft.Json;
 
 namespace IntelligentAgent
 {
-    enum DirList
+    enum Direction
     {
         UP,
         RIGHT,
@@ -24,7 +20,7 @@ namespace IntelligentAgent
         public string agentName { get; set; }
 
         [JsonProperty(PropertyName = "dir")]
-        public DirList currentDir { get; set; }
+        public Direction currentDir { get; set; }
 
         [JsonProperty(PropertyName = "legscount")]
         public int legsCount { get; set; }
@@ -68,22 +64,23 @@ namespace IntelligentAgent
         [JsonProperty(PropertyName = "isVisiable")]
         public string isVisiable { get; set; }
 
-        public List<DirList> aviableDir { get; set; }
+        public List<Direction> aviableDir { get; set; }
     }
 
     struct World
     {
         [JsonProperty(PropertyName = "newcaveopened")]
         public string caveOpenedCount { get; set; }
-
-        [JsonProperty(PropertyName = "isgoldfinded")]
-        public string isGoldFinded { get; set; }
-
-        [JsonProperty(PropertyName = "ismonsteralive")]
-        public string isMonsterAlive { get; set; }
-
         [JsonProperty(PropertyName = "tiktak")]
         public int tiktak { get; set; }
+        public bool isMonsterAlive { get { return m_isMonsterAlive != 0; } }
+        public bool isGoldFinded { get { return m_isGoldFinded != 0; } }
+
+        [JsonProperty(PropertyName = "ismonsteralive")]
+        private int m_isMonsterAlive { get; set; }
+        [JsonProperty(PropertyName = "isgoldfinded")]
+        private int m_isGoldFinded { get; set; }
+
     }
 
     struct Move

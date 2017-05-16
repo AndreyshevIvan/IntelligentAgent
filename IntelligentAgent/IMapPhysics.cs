@@ -9,6 +9,11 @@ namespace IntelligentAgent
     interface IMapPhysics
     {
         void SetMove(Move move);
+        bool GetOpenWorld(ref CavesMap cavesMap);
+        bool GetMonsterCave(ref Cave monsterCave);
+
+        int monsterRow { get; }
+        int monsterColl { get; }
 
         Cave cave { get; }
         World world { get; }

@@ -1,0 +1,12 @@
+if (gold)
+{
+	take
+}
+else
+{
+	if (arrows && isMonsterAlive)
+	{
+		getShootDir() and Shoot()
+	}
+}
+	 

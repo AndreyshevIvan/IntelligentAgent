@@ -24,6 +24,8 @@ namespace IntelligentAgent
             catch (Exception e)
             {
                 Console.WriteLine(e.Message);
+                StreamWriter log = new StreamWriter("out_log.txt");
+                log.WriteLine(e.Message);
             }
         }
 

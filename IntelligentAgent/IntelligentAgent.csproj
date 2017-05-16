@@ -49,6 +49,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Agent.cs" />
+    <Compile Include="Features.cs" />
     <Compile Include="GameException.cs" />
     <Compile Include="GameStructs.cs" />
     <Compile Include="IMapPhysics.cs" />

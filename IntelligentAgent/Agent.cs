@@ -10,8 +10,8 @@ namespace IntelligentAgent
     {
         NONE,
         ON_LEFT,
-        ON_RIGHT,
         ROLL,
+        ON_RIGHT,
     }
 
     enum ActiveAct
@@ -41,8 +41,53 @@ namespace IntelligentAgent
         protected abstract void HandleNewCave(Cave newCave);
         protected abstract void HandleWorld(World world);
         protected abstract Move CalculateMove();
+        protected static PassiveAct GetRollTo(int currR, int currC, Direction currDir, int newR, int newC)
+        {
+            if (currC != newC && currR != newR)
+            {
+                throw new GameException("GetRollTo: New cell is not on line with current cell");
+            }
+
+            Direction newDir = Direction.DOWN;
+
+            if (currR == newR)
+            {
+                if (currC - newC > 0) newDir = Direction.LEFT;
+                else if (currC - newC < 0) newDir = Direction.RIGHT;
+            }
+            else if (currC == newC)
+            {
+                if (currR - newR > 0) newDir = Direction.UP;
+                else if (currR - newR < 0) newDir = Direction.DOWN;
+            }
+
+            return GetRollTo(currDir, newDir);
+        }
+        protected static PassiveAct GetRollTo(Direction oldDir, Direction newDir)
+        {
+            int delta = (int)oldDir - (int)newDir;
+            PassiveAct result = (PassiveAct)((delta + 4) % 4);
+
+            return result;
+        }
+        protected PassiveAct GetRandomPassive()
+        {
+            Random rnd = new Random();
+            int random = rnd.Next(0, (int)PassiveAct.ROLL + 1);
+
+            return (PassiveAct)random;
+        }
+        protected ActiveAct GetRandomActive()
+        {
+            Random rnd = new Random();
+            int random = rnd.Next(0, (int)ActiveAct.TAKE + 1);
+
+            return (ActiveAct)random;
+        }
 
         protected IMapPhysics m_mapPhysics;
         protected AgentInfo m_info;
+        protected CavesMap m_cavesMap;
+        protected World m_world;
     }
 }
