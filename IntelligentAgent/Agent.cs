@@ -52,13 +52,13 @@ namespace IntelligentAgent
 
             if (currR == newR)
             {
-                if (currC - newC > 0) newDir = Direction.LEFT;
-                else if (currC - newC < 0) newDir = Direction.RIGHT;
+                if (currC > newC) newDir = Direction.LEFT;
+                else if (currC < newC) newDir = Direction.RIGHT;
             }
             else if (currC == newC)
             {
-                if (currR - newR > 0) newDir = Direction.UP;
-                else if (currR - newR < 0) newDir = Direction.DOWN;
+                if (currR > newR) newDir = Direction.UP;
+                else if (currR < newR) newDir = Direction.DOWN;
             }
 
             return GetRollTo(currDir, newDir);

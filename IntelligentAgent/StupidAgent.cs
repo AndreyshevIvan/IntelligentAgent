@@ -21,10 +21,10 @@ namespace IntelligentAgent
         {
             PassiveAct result = PassiveAct.NONE;
 
-            result = GetRollTo(1, 1, Direction.UP, 1, -2);
-            result = GetRollTo(1, 1, Direction.UP, 4, 1);
-            result = GetRollTo(1, 1, Direction.UP, 1, 4);
-            result = GetRollTo(1, 1, Direction.UP, -2, 1);
+            result = GetRollTo(1, 1, Direction.RIGHT, 1, -2);
+            result = GetRollTo(1, 1, Direction.RIGHT, 4, 1);
+            result = GetRollTo(1, 1, Direction.RIGHT, 1, 4);
+            result = GetRollTo(1, 1, Direction.RIGHT, -2, 1);
         }
         protected override void HandleWorld(World world)
         {

@@ -108,9 +108,10 @@ namespace IntelligentAgent
         }
         private JObject GetMapJson(string requestUrl)
         {
-            WebRequest request = WebRequest.Create(requestUrl);
-            Stream objStream = request.GetResponse().GetResponseStream();
-            StreamReader objReader = new StreamReader(objStream);
+            //WebRequest request = WebRequest.Create(requestUrl);
+            //Stream objStream = request.GetResponse().GetResponseStream();
+            //StreamReader objReader = new StreamReader(objStream);
+            StreamReader objReader = new StreamReader("response.txt");
             string json = "";
             string sLine = "";
 
