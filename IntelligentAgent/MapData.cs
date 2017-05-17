@@ -74,7 +74,7 @@ namespace IntelligentAgent
         public World currentWorld { get { return m_world; } }
         public AgentInfo currentAgentInfo { get { return m_agent; } }
 
-        private bool m_isOpenWorld = false;
+        private bool m_isOpenWorld = true;
         private Cave m_currentCave;
         private List<Cave> m_cavesMap;
         private World m_world;

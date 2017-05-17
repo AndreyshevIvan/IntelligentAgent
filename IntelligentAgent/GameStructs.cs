@@ -65,6 +65,8 @@ namespace IntelligentAgent
         public string isVisiable { get; set; }
 
         public List<Direction> aviableDir { get; set; }
+        public bool isAvailable { get { return !isMonster && !isHole; } }
+        public string hash { get { return row.ToString() + coll.ToString(); } }
     }
 
     struct World
@@ -112,7 +114,6 @@ namespace IntelligentAgent
 
             return m_map[row, coll];
         }
-
         public void SetCave(Cave cave)
         {
             int row = cave.row;
@@ -124,9 +125,56 @@ namespace IntelligentAgent
             }
             m_map[cave.row, cave.coll] = cave;
         }
+        public List<Cave> ToList()
+        {
+            List<Cave> cavesList = new List<Cave>();
+
+            foreach (Cave cave in m_map)
+            {
+                cavesList.Add(cave);
+            }
+
+            return cavesList;
+        }
+        public bool IsExist(int row, int coll)
+        {
+            bool isRowValid = row >= 0 && row < m_rowsCount;
+            bool isCollValid = coll >= 0 && coll < m_collsCount;
+
+            return isRowValid && isCollValid;
+        }
 
         private Cave[,] m_map;
         private int m_rowsCount;
         private int m_collsCount;
+    }
+
+    struct SearchNode
+    {
+        public SearchNode(int row, int coll)
+        {
+            m_row = row;
+            m_coll = coll;
+            m_way = new List<Direction>();
+            m_hash = row.ToString() + coll.ToString();
+        }
+        public SearchNode(int row, int coll, List<Direction> parentWay, Direction nodeDir)
+        {
+            m_row = row;
+            m_coll = coll;
+            m_way = new List<Direction>(parentWay);
+            m_way.Add(nodeDir);
+            m_hash = row.ToString() + coll.ToString();
+        }
+
+        public List<Direction> way { get { return m_way; } }
+        public string hash { get { return m_hash; } }
+        public int row { get { return m_row; } }
+        public int coll { get { return m_coll; } }
+
+        private List<Direction> m_way;
+        private string m_hash;
+        private int m_coll;
+        private int m_row;
     }
 }

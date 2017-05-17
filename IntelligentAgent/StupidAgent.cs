@@ -35,9 +35,9 @@ namespace IntelligentAgent
         {
             if (m_world.isMonsterAlive)
             {
-                if (!IsOnLineWithMonster())
+                if (!IsOnLineWithMonster(m_mapPhysics.cave))
                 {
-                    return GetToMonsterMove();
+                    return GetToMonsterLineMove();
                 }
                 return GetKillMonsterMove();
             }
@@ -47,18 +47,16 @@ namespace IntelligentAgent
             }
             return GetTakeGoldMove();
         }
-        private bool IsOnLineWithMonster()
+        private bool IsOnLineWithMonster(Cave currentCave)
         {
             Cave monsterCave = new Cave();
-            Cave currCave = m_mapPhysics.cave;
-
             if (!m_mapPhysics.GetMonsterCave(ref monsterCave))
             {
                 return false;
             }
 
-            bool isCommonRow = monsterCave.row == currCave.row;
-            bool isCommonColl = monsterCave.coll == currCave.coll;
+            bool isCommonRow = monsterCave.row == currentCave.row;
+            bool isCommonColl = monsterCave.coll == currentCave.coll;
 
             return isCommonRow || isCommonColl;
         }
@@ -73,17 +71,36 @@ namespace IntelligentAgent
             PassiveAct passive = GetRollTo(currRow, currColl, dir, monsterRow, monsterColl);
             return new Move(passive, ActiveAct.SHOOT);
         }
-        private Move GetToMonsterMove()
+        private Move GetToMonsterLineMove()
         {
+            foreach (Cave dstCave in m_cavesMap.ToList())
+            {
+                if (dstCave.isAvailable && IsOnLineWithMonster(dstCave))
+                {
+                    List<Direction> way = new List<Direction>();
+                    if (GetWay(m_mapPhysics.cave, dstCave, ref way) && way.Count != 0)
+                    {
+                        PassiveAct rotation = GetRollTo(m_info.currentDir, way[0]);
+                        return new Move(rotation, ActiveAct.GO);
+                    }
+                }
+            }
+
             return new Move(GetRandomPassive(), GetRandomActive());
         }
         private Move GetToGoldMove()
         {
+            // find cave with gold
+            // calculate way
+            // if way find return first move
+            // else find new cave on line with monster
+            // do while not check all caves
+
             return new Move(GetRandomPassive(), GetRandomActive());
         }
         private Move GetTakeGoldMove()
         {
-            return new Move(GetRandomPassive(), GetRandomActive());
+            return new Move(PassiveAct.NONE, ActiveAct.TAKE);
         }
     }
 }

@@ -70,6 +70,65 @@ namespace IntelligentAgent
 
             return result;
         }
+        protected bool GetWay(Cave from, Cave to, ref List<Direction> way)
+        {
+            List<string> processHashes = new List<string>();
+            Queue<SearchNode> searchQueue = new Queue<SearchNode>();
+            searchQueue.Enqueue(new SearchNode(from.row, from.coll));
+
+            while (searchQueue.Count != 0)
+            {
+                SearchNode top = searchQueue.Dequeue();
+
+                if (top.hash == to.hash)
+                {
+                    way = top.way;
+                    return true;
+                }
+
+                if (m_cavesMap.IsExist(top.row - 1, top.coll)) // top
+                {
+                    SearchNode node = new SearchNode(top.row - 1, top.coll, top.way, Direction.UP);
+                    if (!processHashes.Contains(node.hash))
+                    {
+                        processHashes.Add(node.hash);
+                        searchQueue.Enqueue(node);
+                    }
+                }
+
+                if (m_cavesMap.IsExist(top.row, top.coll + 1)) // right
+                {
+                    SearchNode node = new SearchNode(top.row, top.coll + 1, top.way, Direction.RIGHT);
+                    if (!processHashes.Contains(node.hash))
+                    {
+                        processHashes.Add(node.hash);
+                        searchQueue.Enqueue(node);
+                    }
+                }
+
+                if (m_cavesMap.IsExist(top.row + 1, top.coll)) // down
+                {
+                    SearchNode node = new SearchNode(top.row + 1, top.coll, top.way, Direction.DOWN);
+                    if (!processHashes.Contains(node.hash))
+                    {
+                        processHashes.Add(node.hash);
+                        searchQueue.Enqueue(node);
+                    }
+                }
+
+                if (m_cavesMap.IsExist(top.row, top.coll - 1)) // left
+                {
+                    SearchNode node = new SearchNode(top.row, top.coll - 1, top.way, Direction.LEFT);
+                    if (!processHashes.Contains(node.hash))
+                    {
+                        processHashes.Add(node.hash);
+                        searchQueue.Enqueue(node);
+                    }
+                }
+            }
+
+            return false;
+        }
         protected PassiveAct GetRandomPassive()
         {
             Random rnd = new Random();
