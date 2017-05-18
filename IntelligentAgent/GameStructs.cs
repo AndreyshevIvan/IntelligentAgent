@@ -67,6 +67,19 @@ namespace IntelligentAgent
         public List<Direction> aviableDir { get; set; }
         public bool isAvailable { get { return !isMonster && !isHole; } }
         public string hash { get { return row.ToString() + coll.ToString(); } }
+
+        public bool IsAvailable(int freeLives)
+        {
+            if (!isMonster)
+            {
+                if (isHole)
+                {
+                    return (freeLives > 0);
+                }
+                return true;
+            }
+            return false;
+        }
     }
 
     struct World
@@ -151,12 +164,13 @@ namespace IntelligentAgent
 
     struct SearchNode
     {
-        public SearchNode(int row, int coll)
+        public SearchNode(int row, int coll, int freeLives = 0)
         {
             m_row = row;
             m_coll = coll;
             m_way = new List<Direction>();
             m_hash = row.ToString() + coll.ToString();
+            lives = freeLives;
         }
         public SearchNode(int row, int coll, List<Direction> parentWay, Direction nodeDir)
         {
@@ -164,13 +178,19 @@ namespace IntelligentAgent
             m_coll = coll;
             m_way = new List<Direction>(parentWay);
             m_way.Add(nodeDir);
-            m_hash = row.ToString() + coll.ToString();
+            m_hash = Utils.CaveHash(row, coll);
+            lives = 0;
+        }
+        public void AddDirection(Direction direction)
+        {
+            m_way.Add(direction);
         }
 
         public List<Direction> way { get { return m_way; } }
         public string hash { get { return m_hash; } }
         public int row { get { return m_row; } }
         public int coll { get { return m_coll; } }
+        public int lives { get; set; }
 
         private List<Direction> m_way;
         private string m_hash;

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace IntelligentAgent
 {
-    static class Features
+    static class Utils
     {
         public static int GetIntrval(int first, int second)
         {
@@ -16,6 +16,11 @@ namespace IntelligentAgent
             }
 
             return Math.Abs(first - second);
+        }
+
+        public static string CaveHash(int row, int coll)
+        {
+            return row.ToString() + coll.ToString();
         }
     }
 }

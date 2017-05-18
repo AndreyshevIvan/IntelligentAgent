@@ -31,9 +31,10 @@ namespace IntelligentAgent
 
         public virtual void DoMove()
         {
+            m_mapPhysics.GetOpenWorld(ref m_cavesMap);
+            m_info = m_mapPhysics.agentInfo;
             HandleNewCave(m_mapPhysics.cave);
             HandleWorld(m_mapPhysics.world);
-            m_info = m_mapPhysics.agentInfo;
             Move move = CalculateMove();
             m_mapPhysics.SetMove(move);
         }
@@ -70,61 +71,29 @@ namespace IntelligentAgent
 
             return result;
         }
-        protected bool GetWay(Cave from, Cave to, ref List<Direction> way)
+        protected bool GetWay(Cave from, Cave to, ref List<Direction> way, int lives)
         {
-            List<string> processHashes = new List<string>();
-            Queue<SearchNode> searchQueue = new Queue<SearchNode>();
-            searchQueue.Enqueue(new SearchNode(from.row, from.coll));
-
-            while (searchQueue.Count != 0)
+            if (lives > 0 && GetWay(from, to, ref way, 0))
             {
-                SearchNode top = searchQueue.Dequeue();
+                return true;
+            }
 
-                if (top.hash == to.hash)
+            m_processHashes = new List<string>();
+            m_searchQueue = new Queue<SearchNode>();
+            m_searchQueue.Enqueue(new SearchNode(from.row, from.coll, lives));
+
+            while (m_searchQueue.Count != 0)
+            {
+                SearchNode queueTop = m_searchQueue.Dequeue();
+                if (queueTop.hash == to.hash)
                 {
-                    way = top.way;
+                    way = queueTop.way;
                     return true;
                 }
-
-                if (m_cavesMap.IsExist(top.row - 1, top.coll)) // top
-                {
-                    SearchNode node = new SearchNode(top.row - 1, top.coll, top.way, Direction.UP);
-                    if (!processHashes.Contains(node.hash))
-                    {
-                        processHashes.Add(node.hash);
-                        searchQueue.Enqueue(node);
-                    }
-                }
-
-                if (m_cavesMap.IsExist(top.row, top.coll + 1)) // right
-                {
-                    SearchNode node = new SearchNode(top.row, top.coll + 1, top.way, Direction.RIGHT);
-                    if (!processHashes.Contains(node.hash))
-                    {
-                        processHashes.Add(node.hash);
-                        searchQueue.Enqueue(node);
-                    }
-                }
-
-                if (m_cavesMap.IsExist(top.row + 1, top.coll)) // down
-                {
-                    SearchNode node = new SearchNode(top.row + 1, top.coll, top.way, Direction.DOWN);
-                    if (!processHashes.Contains(node.hash))
-                    {
-                        processHashes.Add(node.hash);
-                        searchQueue.Enqueue(node);
-                    }
-                }
-
-                if (m_cavesMap.IsExist(top.row, top.coll - 1)) // left
-                {
-                    SearchNode node = new SearchNode(top.row, top.coll - 1, top.way, Direction.LEFT);
-                    if (!processHashes.Contains(node.hash))
-                    {
-                        processHashes.Add(node.hash);
-                        searchQueue.Enqueue(node);
-                    }
-                }
+                TryAddToQueue(queueTop, Direction.UP);
+                TryAddToQueue(queueTop, Direction.DOWN);
+                TryAddToQueue(queueTop, Direction.LEFT);
+                TryAddToQueue(queueTop, Direction.RIGHT);
             }
 
             return false;
@@ -144,9 +113,65 @@ namespace IntelligentAgent
             return (ActiveAct)random;
         }
 
+        private void TryAddToQueue(SearchNode parent, Direction direction)
+        {
+            int row = parent.row;
+            int coll = parent.coll;
+
+            CalcCoordinates(ref row, ref coll, direction);
+
+            if (m_cavesMap.IsExist(row, coll))
+            {
+                string newHash = Utils.CaveHash(row, coll);
+                bool isHashValid = !m_processHashes.Contains(newHash);
+                Cave nextCave = m_cavesMap.GetCave(row, coll);
+
+                if (isHashValid && nextCave.IsAvailable(parent.lives))
+                {
+                    List<Direction> way = parent.way;
+                    SearchNode node = new SearchNode(row, coll, way, direction);
+                    node.lives = (nextCave.isHole) ? parent.lives - 1 : parent.lives;
+                    m_processHashes.Add(node.hash);
+                    m_searchQueue.Enqueue(node);
+                }
+            }
+        }
+        private void CalcCoordinates(ref int row, ref int coll, Direction direction)
+        {
+            switch (direction)
+            {
+                case (Direction.UP):
+                    row--;
+                    break;
+                case (Direction.RIGHT):
+                    coll++;
+                    break;
+                case (Direction.DOWN):
+                    row++;
+                    break;
+                case (Direction.LEFT):
+                    coll--;
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        protected int freeLives
+        {
+            get
+            {
+                int lives = m_info.legsCount;
+                return (lives <= 1) ? 0 : lives - 1;
+            }
+        }
+
         protected IMapPhysics m_mapPhysics;
         protected AgentInfo m_info;
         protected CavesMap m_cavesMap;
         protected World m_world;
+
+        private List<string> m_processHashes;
+        private Queue<SearchNode> m_searchQueue;
     }
 }

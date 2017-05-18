@@ -85,7 +85,7 @@ namespace IntelligentAgent
             m_passive = PassiveAct.NONE;
             m_active = ActiveAct.NONE;
 
-            UpdateMap();
+            //UpdateMap();
         }
 
         private MapData UpdateData(string requestUrl)

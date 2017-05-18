@@ -19,17 +19,13 @@ namespace IntelligentAgent
         }
         protected override void HandleNewCave(Cave newCave)
         {
-            PassiveAct result = PassiveAct.NONE;
-
-            result = GetRollTo(1, 1, Direction.RIGHT, 1, -2);
-            result = GetRollTo(1, 1, Direction.RIGHT, 4, 1);
-            result = GetRollTo(1, 1, Direction.RIGHT, 1, 4);
-            result = GetRollTo(1, 1, Direction.RIGHT, -2, 1);
+            Cave dstCave = m_cavesMap.GetCave(0, 2);
+            List<Direction> way = new List<Direction>();
+            GetWay(m_mapPhysics.cave, dstCave, ref way, freeLives);
         }
         protected override void HandleWorld(World world)
         {
             m_world = world;
-            m_mapPhysics.GetOpenWorld(ref m_cavesMap);
         }
         protected override Move CalculateMove()
         {
@@ -78,7 +74,7 @@ namespace IntelligentAgent
                 if (dstCave.isAvailable && IsOnLineWithMonster(dstCave))
                 {
                     List<Direction> way = new List<Direction>();
-                    if (GetWay(m_mapPhysics.cave, dstCave, ref way) && way.Count != 0)
+                    if (GetWay(m_mapPhysics.cave, dstCave, ref way, freeLives))
                     {
                         PassiveAct rotation = GetRollTo(m_info.currentDir, way[0]);
                         return new Move(rotation, ActiveAct.GO);
@@ -90,11 +86,18 @@ namespace IntelligentAgent
         }
         private Move GetToGoldMove()
         {
-            // find cave with gold
-            // calculate way
-            // if way find return first move
-            // else find new cave on line with monster
-            // do while not check all caves
+            foreach (Cave dstCave in m_cavesMap.ToList())
+            {
+                if (dstCave.isGold)
+                {
+                    List<Direction> way = new List<Direction>();
+                    if (GetWay(m_mapPhysics.cave, dstCave, ref way, freeLives))
+                    {
+                        PassiveAct rotation = GetRollTo(m_info.currentDir, way[0]);
+                        return new Move(rotation, ActiveAct.GO);
+                    }
+                }
+            }
 
             return new Move(GetRandomPassive(), GetRandomActive());
         }
