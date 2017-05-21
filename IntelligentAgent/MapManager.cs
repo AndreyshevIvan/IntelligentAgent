@@ -12,6 +12,10 @@ namespace IntelligentAgent
         {
             return new MapManager(idGame, idUser);
         }
+        public void InitCavesMap(ref CavesMap cavesMap)
+        {
+            m_data.InitCavesMap(ref cavesMap);
+        }
         public void SetMove(Move move)
         {
             m_passive = move.passive;
@@ -42,6 +46,7 @@ namespace IntelligentAgent
 
             return true;
         }
+
         public int monsterRow
         {
             get
@@ -69,23 +74,23 @@ namespace IntelligentAgent
         public Cave cave { get { return m_data.currentCave; } }
         public World world { get { return m_data.currentWorld; } }
         public AgentInfo agentInfo { get { return m_data.currentAgentInfo; } }
-        public string url { get { return "https://www.mooped.net"; } }
+        public string url { get { return "https://mooped.net/"; } }
         public string requestRoot
         {
-            get { return "/local/its/index.php?module=game&action=agentaction&"; }
+            get { return "local/its/game/agentaction"; }
         }
         public string endLog { get { return m_endLog; } }
 
         protected MapManager(string idGame, string idUser)
         {
-            string gameInfo = "gameid=" + idGame + "&";
-            gameInfo += "userid=" + idUser + "&";
+            string gameInfo = "/?gameid=" + idGame;
+            gameInfo += "&userid=" + idUser + "&";
             m_request = url + requestRoot + gameInfo;
 
             m_passive = PassiveAct.NONE;
             m_active = ActiveAct.NONE;
 
-            //UpdateMap();
+            UpdateMap();
         }
 
         private MapData UpdateData(string requestUrl)
@@ -108,10 +113,9 @@ namespace IntelligentAgent
         }
         private JObject GetMapJson(string requestUrl)
         {
-            //WebRequest request = WebRequest.Create(requestUrl);
-            //Stream objStream = request.GetResponse().GetResponseStream();
-            //StreamReader objReader = new StreamReader(objStream);
-            StreamReader objReader = new StreamReader("response.txt");
+            WebRequest request = WebRequest.Create(requestUrl);
+            Stream objStream = request.GetResponse().GetResponseStream();
+            StreamReader objReader = new StreamReader(objStream);
             string json = "";
             string sLine = "";
 

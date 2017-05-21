@@ -16,6 +16,10 @@ namespace IntelligentAgent
 
             InitCavesMap(mapInfo);
         }
+        public void InitCavesMap(ref CavesMap cavesMap)
+        {
+            cavesMap = new CavesMap(4, 4);
+        }
         public bool GetOpenWorld(ref CavesMap cavesMap)
         {
             if (!m_isOpenWorld)
@@ -23,10 +27,9 @@ namespace IntelligentAgent
                 return false;
             }
 
-            cavesMap = new CavesMap(4, 4);
             foreach (Cave cave in m_cavesMap)
             {
-                cavesMap.SetCave(cave);
+                cavesMap.AddCave(cave);
             }
 
             return true;

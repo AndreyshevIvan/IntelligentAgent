@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Newtonsoft.Json;
+using System;
 
 namespace IntelligentAgent
 {
@@ -15,25 +16,18 @@ namespace IntelligentAgent
     {
         [JsonProperty(PropertyName = "arrowcount")]
         public int arrowCount { get; set; }
-
         [JsonProperty(PropertyName = "aname")]
         public string agentName { get; set; }
-
         [JsonProperty(PropertyName = "dir")]
         public Direction currentDir { get; set; }
-
         [JsonProperty(PropertyName = "legscount")]
         public int legsCount { get; set; }
-
         [JsonProperty(PropertyName = "isagentalive")]
         public string isAgentAlive { get; set; }
-
         [JsonProperty(PropertyName = "havegold")]
         public string haveGold { get; set; }
-
         [JsonProperty(PropertyName = "id")]
         public int id { get; set; }
-
         [JsonProperty(PropertyName = "gaid")]
         public int gameId { get; set; }
     }
@@ -42,25 +36,18 @@ namespace IntelligentAgent
     {
         [JsonProperty(PropertyName = "rowN")]
         public int row { get; set; }
-
         [JsonProperty(PropertyName = "colN")]
         public int coll { get; set; }
-
         [JsonProperty(PropertyName = "isGold")]
         public bool isGold { get; set; }
-
         [JsonProperty(PropertyName = "isMonster")]
         public bool isMonster { get; set; }
-
         [JsonProperty(PropertyName = "isHole")]
         public bool isHole { get; set; }
-
         [JsonProperty(PropertyName = "isWind")]
         public bool isWind { get; set; }
-
         [JsonProperty(PropertyName = "isBones")]
         public bool isBone { get; set; }
-
         [JsonProperty(PropertyName = "isVisiable")]
         public string isVisiable { get; set; }
 
@@ -88,11 +75,17 @@ namespace IntelligentAgent
         public string caveOpenedCount { get; set; }
         [JsonProperty(PropertyName = "tiktak")]
         public int tiktak { get; set; }
-        public bool isMonsterAlive { get { return m_isMonsterAlive != 0; } }
+        public bool isMonsterAlive
+        {
+            get
+            {
+                return m_isMonsterAlive == "true" || m_isMonsterAlive == "1";
+            }
+        }
         public bool isGoldFinded { get { return m_isGoldFinded != 0; } }
 
         [JsonProperty(PropertyName = "ismonsteralive")]
-        private int m_isMonsterAlive { get; set; }
+        private string m_isMonsterAlive { get; set; }
         [JsonProperty(PropertyName = "isgoldfinded")]
         private int m_isGoldFinded { get; set; }
 
@@ -120,23 +113,19 @@ namespace IntelligentAgent
         }
         public Cave GetCave(int row, int coll)
         {
-            if (row < 0 || row >= m_rowsCount || coll < 0 || coll >= m_collsCount)
-            {
-                throw new GameException(EMessage.CAVE_ADRESS_OVERFLOW);
-            }
-
+            Validate(row, coll);
             return m_map[row, coll];
         }
-        public void SetCave(Cave cave)
+        public void AddCave(Cave cave)
         {
-            int row = cave.row;
-            int coll = cave.coll;
-
-            if (row < 0 || row >= m_rowsCount || coll < 0 || coll >= m_collsCount)
-            {
-                throw new GameException(EMessage.CAVE_ADRESS_OVERFLOW);
-            }
+            Validate(cave);
             m_map[cave.row, cave.coll] = cave;
+        }
+        public void MarkMonster(Cave bonesCave)
+        {
+            Validate(bonesCave);
+            List<Pair<int, int>> brothersCoords = GetBrothers(bonesCave);
+
         }
         public List<Cave> ToList()
         {
@@ -151,10 +140,45 @@ namespace IntelligentAgent
         }
         public bool IsExist(int row, int coll)
         {
-            bool isRowValid = row >= 0 && row < m_rowsCount;
-            bool isCollValid = coll >= 0 && coll < m_collsCount;
+            try
+            {
+                Validate(row, coll);
+            }
+            catch(Exception) { return false; }
 
-            return isRowValid && isCollValid;
+            return true;
+        }
+
+        private void Validate(Cave cave)
+        {
+            int row = cave.row;
+            int coll = cave.coll;
+
+            if (row < 0 || row >= m_rowsCount || coll < 0 || coll >= m_collsCount)
+            {
+                throw new GameException(EMessage.CAVE_ADRESS_OVERFLOW);
+            }
+        }
+        private void Validate(int row, int coll)
+        {
+            if (row < 0 || row >= m_rowsCount || coll < 0 || coll >= m_collsCount)
+            {
+                throw new GameException(EMessage.CAVE_ADRESS_OVERFLOW);
+            }
+        }
+        private List<Pair<int, int>> GetBrothers(Cave cave)
+        {
+            List<Pair<int, int>> result = new List<Pair<int, int>>();
+
+            int row = cave.row;
+            int coll = cave.coll;
+
+            if (IsExist(row + 1, coll)) result.Add(new Pair<int, int>(row + 1, coll));
+            if (IsExist(row - 1, coll)) result.Add(new Pair<int, int>(row - 1, coll));
+            if (IsExist(row, coll + 1)) result.Add(new Pair<int, int>(row, coll + 1));
+            if (IsExist(row, coll - 1)) result.Add(new Pair<int, int>(row, coll - 1));
+
+            return result;
         }
 
         private Cave[,] m_map;
@@ -197,4 +221,20 @@ namespace IntelligentAgent
         private int m_coll;
         private int m_row;
     }
+
+    public class Pair<T, U>
+    {
+        public Pair()
+        {
+        }
+
+        public Pair(T first, U second)
+        {
+            this.first = first;
+            this.second = second;
+        }
+
+        public T first { get; set; }
+        public U second { get; set; }
+    };
 }

@@ -27,20 +27,17 @@ namespace IntelligentAgent
         protected Agent(IMapPhysics mapPhysics)
         {
             m_mapPhysics = mapPhysics;
+            m_mapPhysics.InitCavesMap(ref m_cavesMap);
         }
 
         public virtual void DoMove()
         {
-            m_mapPhysics.GetOpenWorld(ref m_cavesMap);
-            m_info = m_mapPhysics.agentInfo;
-            HandleNewCave(m_mapPhysics.cave);
-            HandleWorld(m_mapPhysics.world);
+            HandleNewData();
             Move move = CalculateMove();
             m_mapPhysics.SetMove(move);
         }
 
-        protected abstract void HandleNewCave(Cave newCave);
-        protected abstract void HandleWorld(World world);
+        protected abstract void HandleNewData();
         protected abstract Move CalculateMove();
         protected static PassiveAct GetRollTo(int currR, int currC, Direction currDir, int newR, int newC)
         {

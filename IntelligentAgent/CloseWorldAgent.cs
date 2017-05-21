@@ -6,20 +6,22 @@ using System.Threading.Tasks;
 
 namespace IntelligentAgent
 {
-    class RandomAgent : Agent
+    class CloseWorldAgent : Agent
     {
-        static public RandomAgent Create(IMapPhysics mapPhysics)
+        static public CloseWorldAgent Create(IMapPhysics mapPhysics)
         {
-            return new RandomAgent(mapPhysics);
+            return new CloseWorldAgent(mapPhysics);
         }
-        private RandomAgent(IMapPhysics mapPhysics)
+        private CloseWorldAgent(IMapPhysics mapPhysics)
             : base(mapPhysics)
         {
         }
 
         protected override void HandleNewData()
         {
-
+            m_world = m_mapPhysics.world;
+            m_info = m_mapPhysics.agentInfo;
+            m_cavesMap.AddCave(m_mapPhysics.cave);
         }
         protected override Move CalculateMove()
         {

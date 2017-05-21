@@ -1,31 +1,28 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace IntelligentAgent
 {
-    class StupidAgent : Agent
+    class OpenWorldAgent : Agent
     {
-        static public StupidAgent Create(IMapPhysics mapPhysics)
+        static public OpenWorldAgent Create(IMapPhysics mapPhysics)
         {
-            return new StupidAgent(mapPhysics);
+            return new OpenWorldAgent(mapPhysics);
         }
-
-        private StupidAgent(IMapPhysics mapPhysics)
+        private OpenWorldAgent(IMapPhysics mapPhysics)
             : base(mapPhysics)
         {
         }
-        protected override void HandleNewCave(Cave newCave)
+
+        protected override void HandleNewData()
         {
-            Cave dstCave = m_cavesMap.GetCave(0, 2);
-            List<Direction> way = new List<Direction>();
-            GetWay(m_mapPhysics.cave, dstCave, ref way, freeLives);
-        }
-        protected override void HandleWorld(World world)
-        {
-            m_world = world;
+            if (!m_mapPhysics.GetOpenWorld(ref m_cavesMap))
+            {
+                throw new GameException(EMessage.OW_AGENT_WORLD_NOT_OPEN);
+            }
+
+            m_info = m_mapPhysics.agentInfo;
+            m_world = m_mapPhysics.world;
         }
         protected override Move CalculateMove()
         {
