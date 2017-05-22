@@ -75,8 +75,8 @@ namespace IntelligentAgent
                 return true;
             }
 
-            m_processHashes = new List<string>();
-            m_searchQueue = new Queue<SearchNode>();
+            m_searchQueue.Clear();
+            m_processHashes.Clear();
             m_searchQueue.Enqueue(new SearchNode(from.row, from.coll, lives));
 
             while (m_searchQueue.Count != 0)
@@ -87,13 +87,25 @@ namespace IntelligentAgent
                     way = queueTop.way;
                     return true;
                 }
-                TryAddToQueue(queueTop, Direction.UP);
-                TryAddToQueue(queueTop, Direction.DOWN);
-                TryAddToQueue(queueTop, Direction.LEFT);
-                TryAddToQueue(queueTop, Direction.RIGHT);
+                AddToWaySearch(queueTop, Direction.UP);
+                AddToWaySearch(queueTop, Direction.DOWN);
+                AddToWaySearch(queueTop, Direction.LEFT);
+                AddToWaySearch(queueTop, Direction.RIGHT);
             }
 
             return false;
+        }
+        protected bool GetPossibleCaves(ref List<Cave> possibleCaves)
+        {
+            foreach (Cave cave in m_cavesMap.ToList())
+            {
+                if (cave.isVisible)
+                {
+                    List<Pair<int, int>> brothersCoords = m_cavesMap.GetBrothers(cave);
+                    List<Cave> brothers = ;
+                    Utils.Trasfer(brothers, possibleCaves);
+                }
+            }
         }
         protected PassiveAct GetRandomPassive()
         {
@@ -110,7 +122,7 @@ namespace IntelligentAgent
             return (ActiveAct)random;
         }
 
-        private void TryAddToQueue(SearchNode parent, Direction direction)
+        private void AddToWaySearch(SearchNode parent, Direction direction)
         {
             int row = parent.row;
             int coll = parent.coll;
@@ -168,7 +180,7 @@ namespace IntelligentAgent
         protected CavesMap m_cavesMap;
         protected World m_world;
 
-        private List<string> m_processHashes;
-        private Queue<SearchNode> m_searchQueue;
+        Queue<SearchNode> m_searchQueue = new Queue<SearchNode>();
+        List<string> m_processHashes = new List<string>();
     }
 }

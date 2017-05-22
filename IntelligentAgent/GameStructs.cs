@@ -48,12 +48,27 @@ namespace IntelligentAgent
         public bool isWind { get; set; }
         [JsonProperty(PropertyName = "isBones")]
         public bool isBone { get; set; }
-        [JsonProperty(PropertyName = "isVisiable")]
-        public string isVisiable { get; set; }
+        public bool isVisible
+        {
+            get
+            {
+                if (m_isVisiable == null)
+                {
+                    return false;
+                }
 
+                return m_isVisiable.ToLower() == "1" || m_isVisiable.ToLower() == "true";
+            }
+            set
+            {
+                m_isVisiable = "true";
+            }
+        }
         public List<Direction> aviableDir { get; set; }
         public bool isAvailable { get { return !isMonster && !isHole; } }
         public string hash { get { return row.ToString() + coll.ToString(); } }
+        public int monsterChance { get; set; }
+        public int holeChance { get; set; }
 
         public bool IsAvailable(int freeLives)
         {
@@ -67,6 +82,24 @@ namespace IntelligentAgent
             }
             return false;
         }
+        public bool IsAvailable()
+        {
+            return !isMonster && !isHole;
+        }
+        public void InitPropertires(Cave cave)
+        {
+            row = cave.row;
+            coll = cave.coll;
+            isGold = cave.isGold;
+            isHole = cave.isHole;
+            isMonster = cave.isMonster;
+            isWind = cave.isWind;
+            isBone = cave.isBone;
+            isVisible = cave.isVisible;
+        }
+
+        [JsonProperty(PropertyName = "isVisiable")]
+        private string m_isVisiable { get; set; }
     }
 
     struct World
@@ -121,10 +154,15 @@ namespace IntelligentAgent
             Validate(cave);
             m_map[cave.row, cave.coll] = cave;
         }
+        public void AddCaveByProperies(Cave cave)
+        {
+            Validate(cave);
+            m_map[cave.row, cave.coll].InitPropertires(cave);
+        }
         public void MarkMonster(Cave bonesCave)
         {
             Validate(bonesCave);
-            List<Pair<int, int>> brothersCoords = GetBrothers(bonesCave);
+            List<Pair<int, int>> brothersCoords = GetBrothersCoords(bonesCave);
 
         }
         public List<Cave> ToList()
@@ -166,7 +204,7 @@ namespace IntelligentAgent
                 throw new GameException(EMessage.CAVE_ADRESS_OVERFLOW);
             }
         }
-        private List<Pair<int, int>> GetBrothers(Cave cave)
+        private List<Pair<int, int>> GetBrothersCoords(Cave cave)
         {
             List<Pair<int, int>> result = new List<Pair<int, int>>();
 

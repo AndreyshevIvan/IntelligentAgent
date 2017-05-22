@@ -22,5 +22,13 @@ namespace IntelligentAgent
         {
             return row.ToString() + coll.ToString();
         }
+
+        public static void Trasfer<T>(List<T> from, List<T> to)
+        {
+            foreach (T element in from)
+            {
+                to.Add(element);
+            }
+        }
     }
 }

@@ -91,6 +91,11 @@ namespace IntelligentAgent
             m_active = ActiveAct.NONE;
 
             UpdateMap();
+
+            if (m_endLog != null && m_endLog != "")
+            {
+                throw new GameException(m_endLog);
+            }
         }
 
         private MapData UpdateData(string requestUrl)
