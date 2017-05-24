@@ -30,5 +30,23 @@ namespace IntelligentAgent
                 to.Add(element);
             }
         }
+        public static void CreateMatrix<T>(ref T[,] matrix, int rows, int colls, T val)
+        {
+            matrix = new T[rows, colls];
+            FillMatrix(ref matrix, val);
+        }
+        public static void FillMatrix<T>(ref T[,] matrix, T value)
+        {
+            int rowCount = matrix.GetLength(0);
+            int collCount = matrix.GetLength(1);
+
+            for (int i = 0; i < rowCount; i++)
+            {
+                for (int j = 0; j < collCount; j++)
+                {
+                    matrix[i, j] = value;
+                }
+            }
+        }
     }
 }

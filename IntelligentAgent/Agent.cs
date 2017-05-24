@@ -95,18 +95,6 @@ namespace IntelligentAgent
 
             return false;
         }
-        protected bool GetPossibleCaves(ref List<Cave> possibleCaves)
-        {
-            foreach (Cave cave in m_cavesMap.ToList())
-            {
-                if (cave.isVisible)
-                {
-                    List<Pair<int, int>> brothersCoords = m_cavesMap.GetBrothers(cave);
-                    List<Cave> brothers = ;
-                    Utils.Trasfer(brothers, possibleCaves);
-                }
-            }
-        }
         protected PassiveAct GetRandomPassive()
         {
             Random rnd = new Random();

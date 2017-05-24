@@ -67,10 +67,11 @@ namespace IntelligentAgent
         public List<Direction> aviableDir { get; set; }
         public bool isAvailable { get { return !isMonster && !isHole; } }
         public string hash { get { return row.ToString() + coll.ToString(); } }
+
         public int monsterChance { get; set; }
         public int holeChance { get; set; }
 
-        public bool IsAvailable(int freeLives)
+        public bool IsAvailable(int freeLives = 0)
         {
             if (!isMonster)
             {
@@ -81,21 +82,6 @@ namespace IntelligentAgent
                 return true;
             }
             return false;
-        }
-        public bool IsAvailable()
-        {
-            return !isMonster && !isHole;
-        }
-        public void InitPropertires(Cave cave)
-        {
-            row = cave.row;
-            coll = cave.coll;
-            isGold = cave.isGold;
-            isHole = cave.isHole;
-            isMonster = cave.isMonster;
-            isWind = cave.isWind;
-            isBone = cave.isBone;
-            isVisible = cave.isVisible;
         }
 
         [JsonProperty(PropertyName = "isVisiable")]
@@ -142,34 +128,45 @@ namespace IntelligentAgent
         {
             m_rowsCount = rowsCount;
             m_collsCount = collsCount;
-            m_map = new Cave[rowsCount, collsCount];
+            m_caves = new Cave[rowsCount, collsCount];
+            m_monsterChance = new int[rowsCount, collsCount];
+            m_holeChance = new int[rowsCount, collsCount];
+            Utils.FillMatrix(ref m_monsterChance, 0);
+            Utils.FillMatrix(ref m_holeChance, 0);
         }
         public Cave GetCave(int row, int coll)
         {
             Validate(row, coll);
-            return m_map[row, coll];
+            return m_caves[row, coll];
         }
         public void AddCave(Cave cave)
         {
             Validate(cave);
-            m_map[cave.row, cave.coll] = cave;
-        }
-        public void AddCaveByProperies(Cave cave)
-        {
-            Validate(cave);
-            m_map[cave.row, cave.coll].InitPropertires(cave);
+            m_caves[cave.row, cave.coll] = cave;
         }
         public void MarkMonster(Cave bonesCave)
         {
             Validate(bonesCave);
-            List<Pair<int, int>> brothersCoords = GetBrothersCoords(bonesCave);
+            List<Pair<int, int>> brothersCoords = GetBroCoords(bonesCave);
 
+            foreach (Pair<int, int> coordinate in brothersCoords)
+            {
+                MarkMonster(coordinate.first, coordinate.second);
+            }
+        }
+        public void ClearMonsterMarks()
+        {
+            Utils.FillMatrix(ref m_monsterChance, 0);
+        }
+        public void ClearHoleMarks()
+        {
+            Utils.FillMatrix(ref m_holeChance, 0);
         }
         public List<Cave> ToList()
         {
             List<Cave> cavesList = new List<Cave>();
 
-            foreach (Cave cave in m_map)
+            foreach (Cave cave in m_caves)
             {
                 cavesList.Add(cave);
             }
@@ -191,35 +188,48 @@ namespace IntelligentAgent
         {
             int row = cave.row;
             int coll = cave.coll;
-
-            if (row < 0 || row >= m_rowsCount || coll < 0 || coll >= m_collsCount)
-            {
-                throw new GameException(EMessage.CAVE_ADRESS_OVERFLOW);
-            }
+            Validate(row, coll);
         }
         private void Validate(int row, int coll)
         {
-            if (row < 0 || row >= m_rowsCount || coll < 0 || coll >= m_collsCount)
+            if (row < 0 ||
+                coll < 0 ||
+                row >= m_rowsCount ||
+                coll >= m_collsCount)
             {
-                throw new GameException(EMessage.CAVE_ADRESS_OVERFLOW);
+                throw new GameException(EMessage.CAVE_OVERFLOW);
             }
         }
-        private List<Pair<int, int>> GetBrothersCoords(Cave cave)
+        private List<Pair<int, int>> GetBroCoords(Cave cave)
         {
             List<Pair<int, int>> result = new List<Pair<int, int>>();
 
             int row = cave.row;
             int coll = cave.coll;
 
-            if (IsExist(row + 1, coll)) result.Add(new Pair<int, int>(row + 1, coll));
-            if (IsExist(row - 1, coll)) result.Add(new Pair<int, int>(row - 1, coll));
-            if (IsExist(row, coll + 1)) result.Add(new Pair<int, int>(row, coll + 1));
-            if (IsExist(row, coll - 1)) result.Add(new Pair<int, int>(row, coll - 1));
+            if (IsExist(row + 1, coll))
+                result.Add(new Pair<int, int>(row + 1, coll));
+
+            if (IsExist(row - 1, coll))
+                result.Add(new Pair<int, int>(row - 1, coll));
+
+            if (IsExist(row, coll + 1))
+                result.Add(new Pair<int, int>(row, coll + 1));
+
+            if (IsExist(row, coll - 1))
+                result.Add(new Pair<int, int>(row, coll - 1));
 
             return result;
         }
+        private void MarkMonster(int row, int coll)
+        {
+            Validate(row, coll);
+            m_monsterChance[row, coll] += 1;
+        }
 
-        private Cave[,] m_map;
+        private Cave[,] m_caves;
+        private int[,] m_holeChance;
+        private int[,] m_monsterChance;
         private int m_rowsCount;
         private int m_collsCount;
     }

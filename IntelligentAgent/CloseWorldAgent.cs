@@ -21,7 +21,7 @@ namespace IntelligentAgent
         {
             m_world = m_mapPhysics.world;
             m_info = m_mapPhysics.agentInfo;
-            m_cavesMap.AddCaveByProperies(m_mapPhysics.cave);
+            m_cavesMap.AddCave(m_mapPhysics.cave);
         }
         protected override Move CalculateMove()
         {
