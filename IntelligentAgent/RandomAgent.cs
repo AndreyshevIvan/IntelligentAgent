@@ -23,7 +23,7 @@ namespace IntelligentAgent
         }
         protected override Move CalculateMove()
         {
-            return new Move(GetRandomPassive(), GetRandomActive());
+            return GetRandomMove();
         }
     }
 }

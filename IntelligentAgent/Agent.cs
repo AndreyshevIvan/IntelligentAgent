@@ -13,7 +13,6 @@ namespace IntelligentAgent
         ROLL,
         ON_RIGHT,
     }
-
     enum ActiveAct
     {
         NONE,
@@ -68,6 +67,48 @@ namespace IntelligentAgent
 
             return result;
         }
+        protected bool GetBestCave(ref Cave bestCave)
+        {
+            List<Cave> possibleCaves = new List<Cave>();
+            if (GetPossibleCaves(ref possibleCaves))
+            {
+                bestCave = possibleCaves[0];
+                int bestAttention = m_cavesMap.GetAttention(bestCave);
+
+                foreach (Cave cave in possibleCaves)
+                {
+                    int newAttention = m_cavesMap.GetAttention(cave);
+                    if (newAttention < bestAttention)
+                    {
+                        bestAttention = newAttention;
+                        bestCave = cave;
+                    }
+                }
+
+                m_isScout = true;
+                return true;
+            }
+            return false;
+        }
+        protected bool GetPossibleCaves(ref List<Cave> possibleCaves)
+        {
+            Cave start = m_mapPhysics.cave;
+            possibleCaves.Clear();
+            m_searchQueue.Clear();
+            m_processHashes.Clear();
+            m_searchQueue.Enqueue(new SearchNode(start.row, start.coll));
+
+            while (m_searchQueue.Count != 0)
+            {
+                SearchNode queueTop = m_searchQueue.Dequeue();
+                AddToPossibleList(queueTop, Direction.UP, ref possibleCaves);
+                AddToPossibleList(queueTop, Direction.DOWN, ref possibleCaves);
+                AddToPossibleList(queueTop, Direction.LEFT, ref possibleCaves);
+                AddToPossibleList(queueTop, Direction.RIGHT, ref possibleCaves);
+            }
+
+            return possibleCaves.Count != 0;
+        }
         protected bool GetWay(Cave from, Cave to, ref List<Direction> way, int lives)
         {
             if (lives > 0 && GetWay(from, to, ref way, 0))
@@ -109,13 +150,21 @@ namespace IntelligentAgent
 
             return (ActiveAct)random;
         }
+        protected Move GetRandomMove()
+        {
+            return new Move(GetRandomPassive(), GetRandomActive());
+        }
+        protected virtual bool AddToWayPredicate(SearchNode parent, Cave child)
+        {
+            return child.IsAvailable(parent.lives);
+        }
 
-        private void AddToWaySearch(SearchNode parent, Direction direction)
+        private void AddToWaySearch(SearchNode parent, Direction dir)
         {
             int row = parent.row;
             int coll = parent.coll;
 
-            CalcCoordinates(ref row, ref coll, direction);
+            CalcCoordinates(ref row, ref coll, dir);
 
             if (m_cavesMap.IsExist(row, coll))
             {
@@ -123,13 +172,40 @@ namespace IntelligentAgent
                 bool isHashValid = !m_processHashes.Contains(newHash);
                 Cave nextCave = m_cavesMap.GetCave(row, coll);
 
-                if (isHashValid && nextCave.IsAvailable(parent.lives))
+                if (isHashValid && AddToWayPredicate(parent, nextCave))
                 {
                     List<Direction> way = parent.way;
-                    SearchNode node = new SearchNode(row, coll, way, direction);
+                    SearchNode node = new SearchNode(row, coll, way, dir);
                     node.lives = (nextCave.isHole) ? parent.lives - 1 : parent.lives;
                     m_processHashes.Add(node.hash);
                     m_searchQueue.Enqueue(node);
+                }
+            }
+        }
+        private void AddToPossibleList(SearchNode parent, Direction dir, ref List<Cave> list)
+        {
+            int row = parent.row;
+            int coll = parent.coll;
+
+            CalcCoordinates(ref row, ref coll, dir);
+
+            if (m_cavesMap.IsExist(row, coll))
+            {
+                string newHash = Utils.CaveHash(row, coll);
+                bool isHashValid = !m_processHashes.Contains(newHash);
+                Cave nextCave = m_cavesMap.GetCave(row, coll);
+
+                if (isHashValid)
+                {
+                    m_processHashes.Add(newHash);
+                    if (nextCave.isVisible)
+                    {
+                        SearchNode node = new SearchNode(row, coll);
+                        m_searchQueue.Enqueue(node);
+                        return;
+                    }
+
+                    list.Add(nextCave);
                 }
             }
         }
@@ -153,6 +229,7 @@ namespace IntelligentAgent
                     break;
             }
         }
+       
 
         protected int freeLives
         {
@@ -167,6 +244,8 @@ namespace IntelligentAgent
         protected AgentInfo m_info;
         protected CavesMap m_cavesMap;
         protected World m_world;
+
+        protected bool m_isScout = false;
 
         Queue<SearchNode> m_searchQueue = new Queue<SearchNode>();
         List<string> m_processHashes = new List<string>();

@@ -20,9 +20,22 @@ namespace IntelligentAgent
 
         public static string CaveHash(int row, int coll)
         {
-            return row.ToString() + coll.ToString();
+            return row.ToString() + hashSeparator + coll.ToString();
         }
 
+        public static void HashToCoords(string hash, ref int row, ref int coll)
+        {
+            try
+            {
+                string[] coords = hash.Split(hashSeparator);
+                row = int.Parse(coords[0]);
+                coll = int.Parse(coords[1]);
+            }
+            catch (Exception)
+            {
+                throw new GameException(EMessage.ERROR_PARSE_HASH);
+            }
+        }
         public static void Trasfer<T>(List<T> from, List<T> to)
         {
             foreach (T element in from)
@@ -48,5 +61,7 @@ namespace IntelligentAgent
                 }
             }
         }
+
+        public static char hashSeparator { get { return '|'; } }
     }
 }

@@ -31,7 +31,6 @@ namespace IntelligentAgent
         [JsonProperty(PropertyName = "gaid")]
         public int gameId { get; set; }
     }
-
     struct Cave
     {
         [JsonProperty(PropertyName = "rowN")]
@@ -66,10 +65,8 @@ namespace IntelligentAgent
         }
         public List<Direction> aviableDir { get; set; }
         public bool isAvailable { get { return !isMonster && !isHole; } }
-        public string hash { get { return row.ToString() + coll.ToString(); } }
-
-        public int monsterChance { get; set; }
-        public int holeChance { get; set; }
+        public string hash { get { return Utils.CaveHash(row, coll); } }
+        public Pair<int, int> coord { get { return new Pair<int, int>(row, coll); } }
 
         public bool IsAvailable(int freeLives = 0)
         {
@@ -87,7 +84,6 @@ namespace IntelligentAgent
         [JsonProperty(PropertyName = "isVisiable")]
         private string m_isVisiable { get; set; }
     }
-
     struct World
     {
         [JsonProperty(PropertyName = "newcaveopened")]
@@ -109,7 +105,6 @@ namespace IntelligentAgent
         private int m_isGoldFinded { get; set; }
 
     }
-
     struct Move
     {
         public Move(PassiveAct passive, ActiveAct active)
@@ -121,7 +116,6 @@ namespace IntelligentAgent
         public PassiveAct passive;
         public ActiveAct active;
     }
-
     struct CavesMap
     {
         public CavesMap(int rowsCount, int collsCount)
@@ -131,6 +125,10 @@ namespace IntelligentAgent
             m_caves = new Cave[rowsCount, collsCount];
             m_monsterChance = new int[rowsCount, collsCount];
             m_holeChance = new int[rowsCount, collsCount];
+            m_checkedBones = new List<Pair<int, int>>();
+            m_checkedWings = new List<Pair<int, int>>();
+
+            InitCaves();
             Utils.FillMatrix(ref m_monsterChance, 0);
             Utils.FillMatrix(ref m_holeChance, 0);
         }
@@ -138,6 +136,17 @@ namespace IntelligentAgent
         {
             Validate(row, coll);
             return m_caves[row, coll];
+        }
+        public int GetAttention(Cave cave)
+        {
+            Validate(cave);
+            int row = cave.row;
+            int coll = cave.coll;
+
+            int monsterChance = m_monsterChance[row, coll];
+            int holeChance = m_holeChance[row, coll];
+
+            return monsterChance + holeChance;
         }
         public void AddCave(Cave cave)
         {
@@ -183,7 +192,53 @@ namespace IntelligentAgent
 
             return true;
         }
+        public void UpdateAttentions()
+        {
+            UpdateBones();
+            UpdateWings();
+        }
 
+        private void UpdateBones()
+        {
+            foreach (Cave cave in m_caves)
+            {
+                if (cave.isWind && !IsHoleOpen(cave) && !m_checkedWings.Contains(cave.coord))
+                {
+                    List<Pair<int, int>> brothers = GetBroCoords(cave);
+                    foreach (Pair<int, int> coord in brothers)
+                    {
+                        m_holeChance[coord.first, coord.second]++;
+                        m_checkedWings.Add(cave.coord);
+                    }
+                }
+            }
+        }
+        private void UpdateWings()
+        {
+            foreach (Cave cave in m_caves)
+            {
+                if (cave.isBone && !IsMonsterOpen(cave) && !m_checkedBones.Contains(cave.coord))
+                {
+                    List<Pair<int, int>> brothers = GetBroCoords(cave);
+                    foreach (Pair<int, int> coord in brothers)
+                    {
+                        m_monsterChance[coord.first, coord.second]++;
+                        m_checkedBones.Add(cave.coord);
+                    }
+                }
+            }
+        }
+        private void InitCaves()
+        {
+            for (int i = 0; i < m_rowsCount; i++)
+            {
+                for (int j = 0; j < m_collsCount; j++)
+                {
+                    m_caves[i, j].row = i;
+                    m_caves[i, j].coll = j;
+                }
+            }
+        }
         private void Validate(Cave cave)
         {
             int row = cave.row;
@@ -226,14 +281,43 @@ namespace IntelligentAgent
             Validate(row, coll);
             m_monsterChance[row, coll] += 1;
         }
+        private bool IsHoleOpen(Cave cave)
+        {
+            List<Pair<int, int>> brothers = GetBroCoords(cave);
+            foreach(Pair<int, int> coord in brothers)
+            {
+                Cave brother = m_caves[coord.first, coord.second];
+                if (brother.isVisible && brother.isHole)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+        private bool IsMonsterOpen(Cave cave)
+        {
+            List<Pair<int, int>> brothers = GetBroCoords(cave);
+            foreach (Pair<int, int> coord in brothers)
+            {
+                Cave brother = m_caves[coord.first, coord.second];
+                if (brother.isVisible && brother.isMonster)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
 
         private Cave[,] m_caves;
         private int[,] m_holeChance;
         private int[,] m_monsterChance;
         private int m_rowsCount;
         private int m_collsCount;
+        private List<Pair<int, int>> m_checkedWings;
+        private List<Pair<int, int>> m_checkedBones;
     }
-
     struct SearchNode
     {
         public SearchNode(int row, int coll, int freeLives = 0)
@@ -241,7 +325,7 @@ namespace IntelligentAgent
             m_row = row;
             m_coll = coll;
             m_way = new List<Direction>();
-            m_hash = row.ToString() + coll.ToString();
+            m_hash = Utils.CaveHash(row, coll);
             lives = freeLives;
         }
         public SearchNode(int row, int coll, List<Direction> parentWay, Direction nodeDir)
@@ -269,7 +353,6 @@ namespace IntelligentAgent
         private int m_coll;
         private int m_row;
     }
-
     public class Pair<T, U>
     {
         public Pair()

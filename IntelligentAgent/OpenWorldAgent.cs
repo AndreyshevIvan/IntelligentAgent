@@ -79,7 +79,7 @@ namespace IntelligentAgent
                 }
             }
 
-            return new Move(GetRandomPassive(), GetRandomActive());
+            return GetRandomMove();
         }
         private Move GetToGoldMove()
         {
