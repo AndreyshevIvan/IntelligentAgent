@@ -125,12 +125,14 @@ namespace IntelligentAgent
             m_caves = new Cave[rowsCount, collsCount];
             m_monsterChance = new int[rowsCount, collsCount];
             m_holeChance = new int[rowsCount, collsCount];
-            m_checkedBones = new List<Pair<int, int>>();
-            m_checkedWings = new List<Pair<int, int>>();
+            m_updatedBones = new bool[rowsCount, collsCount];
+            m_updatedWings = new bool[rowsCount, collsCount];
 
             InitCaves();
             Utils.FillMatrix(ref m_monsterChance, 0);
             Utils.FillMatrix(ref m_holeChance, 0);
+            Utils.FillMatrix(ref m_updatedBones, false);
+            Utils.FillMatrix(ref m_updatedWings, false);
         }
         public Cave GetCave(int row, int coll)
         {
@@ -171,6 +173,11 @@ namespace IntelligentAgent
         {
             Utils.FillMatrix(ref m_holeChance, 0);
         }
+        public int GetMonsterChance(Cave cave)
+        {
+            Validate(cave);
+            return m_monsterChance[cave.row, cave.coll];
+        }
         public List<Cave> ToList()
         {
             List<Cave> cavesList = new List<Cave>();
@@ -194,36 +201,80 @@ namespace IntelligentAgent
         }
         public void UpdateAttentions()
         {
-            UpdateBones();
             UpdateWings();
+            UpdateBones();
         }
-
-        private void UpdateBones()
+        public bool GetGoldCave(ref Cave goldCave)
         {
             foreach (Cave cave in m_caves)
             {
-                if (cave.isWind && !IsHoleOpen(cave) && !m_checkedWings.Contains(cave.coord))
+                if (cave.isGold)
+                {
+                    goldCave = cave;
+                    return true;
+                }
+            }
+
+            if (closeCount == 1)
+            {
+                foreach (Cave cave in m_caves)
+                {
+                    if (!cave.isVisible)
+                    {
+                        goldCave = cave;
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+        public int openCount
+        {
+            get
+            {
+                int count = 0;
+                foreach (Cave cave in m_caves)
+                {
+                    if (cave.isVisible) count++;
+                }
+                return count;
+            }
+        }
+        public int closeCount
+        {
+            get
+            {
+                return m_collsCount * m_rowsCount - openCount;
+            }
+        }
+
+        private void UpdateWings()
+        {
+            foreach (Cave cave in m_caves)
+            {
+                if (cave.isWind && !IsHoleOpen(cave) && !m_updatedWings[cave.row, cave.coll])
                 {
                     List<Pair<int, int>> brothers = GetBroCoords(cave);
                     foreach (Pair<int, int> coord in brothers)
                     {
                         m_holeChance[coord.first, coord.second]++;
-                        m_checkedWings.Add(cave.coord);
+                        m_updatedWings[cave.row, cave.coll] = true;
                     }
                 }
             }
         }
-        private void UpdateWings()
+        private void UpdateBones()
         {
             foreach (Cave cave in m_caves)
             {
-                if (cave.isBone && !IsMonsterOpen(cave) && !m_checkedBones.Contains(cave.coord))
+                if (cave.isBone && !IsMonsterOpen(cave) && !m_updatedBones[cave.row, cave.coll])
                 {
                     List<Pair<int, int>> brothers = GetBroCoords(cave);
                     foreach (Pair<int, int> coord in brothers)
                     {
                         m_monsterChance[coord.first, coord.second]++;
-                        m_checkedBones.Add(cave.coord);
+                        m_updatedBones[cave.row, cave.coll] = true;
                     }
                 }
             }
@@ -315,8 +366,8 @@ namespace IntelligentAgent
         private int[,] m_monsterChance;
         private int m_rowsCount;
         private int m_collsCount;
-        private List<Pair<int, int>> m_checkedWings;
-        private List<Pair<int, int>> m_checkedBones;
+        private bool[,] m_updatedBones;
+        private bool[,] m_updatedWings;
     }
     struct SearchNode
     {
