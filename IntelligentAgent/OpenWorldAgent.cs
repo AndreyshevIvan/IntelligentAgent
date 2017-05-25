@@ -38,7 +38,7 @@ namespace IntelligentAgent
             {
                 return GetToGoldMove();
             }
-            return GetTakeGoldMove();
+            return new Move(PassiveAct.NONE, ActiveAct.TAKE);
         }
         private bool IsOnLineWithMonster(Cave currentCave)
         {
@@ -97,10 +97,6 @@ namespace IntelligentAgent
             }
 
             return new Move(GetRandomPassive(), GetRandomActive());
-        }
-        private Move GetTakeGoldMove()
-        {
-            return new Move(PassiveAct.NONE, ActiveAct.TAKE);
         }
     }
 }

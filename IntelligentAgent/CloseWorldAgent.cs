@@ -51,7 +51,6 @@ namespace IntelligentAgent
 
             return isEmpty || isEasy;
         }
-
         private void UpdateScoutSystem()
         {
             if (!m_isScout)
@@ -75,7 +74,6 @@ namespace IntelligentAgent
             if (m_world.isMonsterAlive) return;
             m_cavesMap.ClearMonsterMarks();
         }
-
         private Move KillTactic()
         {
             if (!IsOnLineWithMonster(m_mapPhysics.cave))
