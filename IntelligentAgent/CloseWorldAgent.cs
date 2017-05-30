@@ -23,12 +23,11 @@ namespace IntelligentAgent
             UpdateKillSystem();
             m_world = m_mapPhysics.world;
             m_info = m_mapPhysics.agentInfo;
-            m_cavesMap.AddCave(m_mapPhysics.cave);
-            m_cavesMap.UpdateAttentions();
+            m_cavesMap.AddCave(m_mapPhysics.cave, m_world.isMonsterAlive);
         }
         protected override Move CalculateMove()
         {
-            if (IsMonsterVisible())
+            if (IsMonsterAvailable())
             {
                 return KillTactic();
             }
@@ -47,9 +46,10 @@ namespace IntelligentAgent
                 return true;
             }
             bool isEmpty = wayCave.isVisible && wayCave.isAvailable;
-            bool isEasy = m_cavesMap.GetHoleChance(wayCave) < 2;
+            bool isNoHole = m_cavesMap.GetHoleChance(wayCave) < 2;
+            bool isNoMonster = m_cavesMap.GetMonsterChance(wayCave) < 1;
 
-            return isEmpty || isEasy;
+            return isEmpty || (isNoHole && isNoMonster);
         }
         private void UpdateScoutSystem()
         {
@@ -91,7 +91,9 @@ namespace IntelligentAgent
             if (m_mapPhysics.cave.isGold)
             {
                 Move move = new Move(PassiveAct.NONE, ActiveAct.TAKE);
-                return TryDoFinalShoot(move);
+                move = TryDoFinalShoot(move);
+                m_cavesMap.ClearMonsterMarks();
+                return move;
             }
 
             Cave goldCave = new Cave();
@@ -134,7 +136,7 @@ namespace IntelligentAgent
             List<Direction> way = null;
 
             if ((m_isScout || GetBestCave(ref m_scoutCell)) &&
-                GetWay(cave, m_scoutCell, ref way, freeLives))
+                GetBestWay(cave, m_scoutCell, ref way, freeLives))
             {
                 PassiveAct rotation = GetRollTo(dir, way[0]);
                 return new Move(rotation, ActiveAct.GO);
@@ -144,7 +146,7 @@ namespace IntelligentAgent
             {
                 PassiveAct scoutPass = GetRollTo(cave, dir, m_scoutCell);
                 return new Move(scoutPass, ActiveAct.GO);
-            } catch {}
+            } catch(GameException) {}
 
             return GetRandomMove();
         }
@@ -222,7 +224,7 @@ namespace IntelligentAgent
             }
             return false;
         }
-        private bool IsMonsterVisible()
+        private bool IsMonsterAvailable()
         {
             Cave cave = new Cave();
             bool isALive = m_world.isMonsterAlive;

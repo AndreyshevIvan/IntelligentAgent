@@ -149,6 +149,46 @@ namespace IntelligentAgent
 
             return false;
         }
+        protected bool GetBestWay(Cave from, Cave to, ref List<Direction> way, int lives)
+        {
+            if (lives > 0 && GetWay(from, to, ref way, 0))
+            {
+                return true;
+            }
+
+            m_bestWayQueue.Clear();
+            m_processHashes.Clear();
+            m_bestWayQueue.Add(new SearchNode(from.row, from.coll, lives));
+
+            while (m_bestWayQueue.Count != 0)
+            {
+                SearchNode queueTop = m_bestWayQueue[0];
+                Cave cave = m_cavesMap.GetCave(queueTop.row, queueTop.coll);
+                int bestChance = m_cavesMap.GetAttention(cave);
+                foreach(SearchNode node in m_bestWayQueue)
+                {
+                    Cave newCave = m_cavesMap.GetCave(queueTop.row, queueTop.coll);
+                    int newChance = m_cavesMap.GetAttention(newCave);
+                    if (newChance < bestChance)
+                    {
+                        bestChance = newChance;
+                        queueTop = node;
+                    }
+                }
+                m_bestWayQueue.Remove(queueTop);
+                if (queueTop.hash == to.hash)
+                {
+                    way = queueTop.way;
+                    return true;
+                }
+                AddToBestWaySearch(queueTop, Direction.UP);
+                AddToBestWaySearch(queueTop, Direction.DOWN);
+                AddToBestWaySearch(queueTop, Direction.LEFT);
+                AddToBestWaySearch(queueTop, Direction.RIGHT);
+            }
+
+            return false;
+        }
         protected PassiveAct GetRandomPassive()
         {
             Random rnd = new Random();
@@ -208,7 +248,7 @@ namespace IntelligentAgent
                 if (isHashValid)
                 {
                     m_processHashes.Add(newHash);
-                    if (nextCave.isVisible)
+                    if (nextCave.isVisible && !nextCave.isHole)
                     {
                         SearchNode node = new SearchNode(row, coll);
                         m_searchQueue.Enqueue(node);
@@ -242,6 +282,29 @@ namespace IntelligentAgent
                 }
             }
         }
+        private void AddToBestWaySearch(SearchNode parent, Direction dir)
+        {
+            int row = parent.row;
+            int coll = parent.coll;
+
+            CalcCoordinates(ref row, ref coll, dir);
+
+            if (m_cavesMap.IsExist(row, coll))
+            {
+                string newHash = Utils.CaveHash(row, coll);
+                bool isHashValid = !m_processHashes.Contains(newHash);
+                Cave nextCave = m_cavesMap.GetCave(row, coll);
+
+                if (isHashValid && AddToWayPredicate(parent, nextCave))
+                {
+                    List<Direction> way = parent.way;
+                    SearchNode node = new SearchNode(row, coll, way, dir);
+                    node.lives = (nextCave.isHole) ? parent.lives - 1 : parent.lives;
+                    m_processHashes.Add(node.hash);
+                    m_bestWayQueue.Add(node);
+                }
+            }
+        }
 
         protected int freeLives
         {
@@ -258,6 +321,7 @@ namespace IntelligentAgent
         protected World m_world;
         protected bool m_isScout = false;
         Queue<SearchNode> m_searchQueue = new Queue<SearchNode>();
+        List<SearchNode> m_bestWayQueue = new List<SearchNode>();
         List<string> m_processHashes = new List<string>();
     }
 }

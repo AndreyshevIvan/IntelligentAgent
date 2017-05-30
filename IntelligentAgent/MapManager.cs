@@ -12,6 +12,10 @@ namespace IntelligentAgent
         {
             return new MapManager(idGame, idUser);
         }
+        static public MapManager Create(string hash)
+        {
+            return new MapManager(hash);
+        }
         public void InitCavesMap(ref CavesMap cavesMap)
         {
             m_data.InitCavesMap(ref cavesMap);
@@ -81,6 +85,21 @@ namespace IntelligentAgent
         }
         public string endLog { get { return m_endLog; } }
 
+        protected MapManager(string hash)
+        {
+            string gameInfo = "/?hash=" + hash + "&";
+            m_request = url + requestRoot + gameInfo;
+
+            m_passive = PassiveAct.NONE;
+            m_active = ActiveAct.NONE;
+
+            UpdateMap();
+
+            if (m_endLog != null && m_endLog != "")
+            {
+                throw new GameException(m_endLog);
+            }
+        }
         protected MapManager(string idGame, string idUser)
         {
             string gameInfo = "/?gameid=" + idGame;

@@ -125,14 +125,14 @@ namespace IntelligentAgent
             m_caves = new Cave[rowsCount, collsCount];
             m_monsterChance = new int[rowsCount, collsCount];
             m_holeChance = new int[rowsCount, collsCount];
-            m_updatedBones = new bool[rowsCount, collsCount];
-            m_updatedWings = new bool[rowsCount, collsCount];
+            m_checkedBones = new bool[rowsCount, collsCount];
+            m_checkedWings = new bool[rowsCount, collsCount];
 
             InitCaves();
             Utils.FillMatrix(ref m_monsterChance, 0);
             Utils.FillMatrix(ref m_holeChance, 0);
-            Utils.FillMatrix(ref m_updatedBones, false);
-            Utils.FillMatrix(ref m_updatedWings, false);
+            Utils.FillMatrix(ref m_checkedBones, false);
+            Utils.FillMatrix(ref m_checkedWings, false);
         }
         public Cave GetCave(int row, int coll)
         {
@@ -150,10 +150,14 @@ namespace IntelligentAgent
 
             return monsterChance * 2 + holeChance;
         }
-        public void AddCave(Cave cave)
+        public void AddCave(Cave cave, bool isMonsterAlive = false)
         {
             Validate(cave);
             m_caves[cave.row, cave.coll] = cave;
+
+            MarkWings(cave);
+            if (cave.isHole) m_holeChance[cave.row, cave.coll] = 2;
+            if (isMonsterAlive && !IsMonsterDefined()) MarkBones(cave);
         }
         public void ClearMonsterMarks()
         {
@@ -174,6 +178,7 @@ namespace IntelligentAgent
                 {
                     m_monsterChance[row, i] = 0;
                 }
+                return;
             }
             for (int i = 0; i < m_rowsCount; i++)
             {
@@ -234,35 +239,27 @@ namespace IntelligentAgent
 
             return true;
         }
-        public void UpdateAttentions()
-        {
-            UpdateWings();
-            UpdateBones();
-        }
         public bool GetGoldCave(ref Cave goldCave)
         {
             foreach (Cave cave in m_caves)
             {
-                if (cave.isGold)
-                {
-                    goldCave = cave;
-                    return true;
-                }
+                if (!cave.isGold) continue;
+                goldCave = cave;
+                return true;
             }
 
-            if (closeCount == 1)
+            if (closeCount != 1)
             {
-                foreach (Cave cave in m_caves)
-                {
-                    if (!cave.isVisible)
-                    {
-                        goldCave = cave;
-                        return true;
-                    }
-                }
+                return false;
             }
 
-            return false;
+            foreach (Cave cave in m_caves)
+            {
+                if (cave.isVisible) continue;
+                goldCave = cave;
+            }
+
+            return true;
         }
         public int openCount
         {
@@ -284,39 +281,39 @@ namespace IntelligentAgent
             }
         }
 
-        private void UpdateWings()
+        private void MarkWings(Cave newCave)
         {
-            foreach (Cave cave in m_caves)
+            if (!newCave.isWind || m_checkedWings[newCave.row, newCave.coll])
             {
-                if (cave.isWind && !IsHoleOpen(cave) && !m_updatedWings[cave.row, cave.coll])
+                return;
+            }
+
+            List<Pair<int, int>> brothers = GetBroCoords(newCave);
+            foreach (Pair<int, int> coord in brothers)
+            {
+                m_checkedWings[newCave.row, newCave.coll] = true;
+                if (m_holeChance[coord.first, coord.second] < 2 &&
+                    !m_caves[coord.first, coord.second].isVisible)
                 {
-                    List<Pair<int, int>> brothers = GetBroCoords(cave);
-                    foreach (Pair<int, int> coord in brothers)
-                    {
-                        if (m_holeChance[coord.first, coord.second] < 2)
-                        {
-                            m_holeChance[coord.first, coord.second]++;
-                        }
-                        m_updatedWings[cave.row, cave.coll] = true;
-                    }
+                    m_holeChance[coord.first, coord.second]++;
                 }
             }
         }
-        private void UpdateBones()
+        private void MarkBones(Cave newCave)
         {
-            foreach (Cave cave in m_caves)
+            if (!newCave.isBone || m_checkedBones[newCave.row, newCave.coll])
             {
-                if (cave.isBone && !IsMonsterOpen(cave) && !m_updatedBones[cave.row, cave.coll])
+                return;
+            }
+
+            List<Pair<int, int>> brothers = GetBroCoords(newCave);
+            foreach (Pair<int, int> coord in brothers)
+            {
+                m_checkedBones[newCave.row, newCave.coll] = true;
+                if (m_monsterChance[coord.first, coord.second] < 2 &&
+                    !m_caves[coord.first, coord.second].isVisible)
                 {
-                    List<Pair<int, int>> brothers = GetBroCoords(cave);
-                    foreach (Pair<int, int> coord in brothers)
-                    {
-                        if (m_monsterChance[coord.first, coord.second] < 2)
-                        {
-                            m_monsterChance[coord.first, coord.second]++;
-                        }
-                        m_updatedBones[cave.row, cave.coll] = true;
-                    }
+                    m_monsterChance[coord.first, coord.second]++;
                 }
             }
         }
@@ -368,32 +365,15 @@ namespace IntelligentAgent
 
             return result;
         }
-        private bool IsHoleOpen(Cave cave)
+        private bool IsMonsterDefined()
         {
-            List<Pair<int, int>> brothers = GetBroCoords(cave);
-            foreach(Pair<int, int> coord in brothers)
+            foreach(Cave cave in m_caves)
             {
-                Cave brother = m_caves[coord.first, coord.second];
-                if (brother.isVisible && brother.isHole)
+                if (m_monsterChance[cave.row, cave.coll] > 1)
                 {
                     return true;
                 }
             }
-
-            return false;
-        }
-        private bool IsMonsterOpen(Cave cave)
-        {
-            List<Pair<int, int>> brothers = GetBroCoords(cave);
-            foreach (Pair<int, int> coord in brothers)
-            {
-                Cave brother = m_caves[coord.first, coord.second];
-                if (brother.isVisible && brother.isMonster)
-                {
-                    return true;
-                }
-            }
-
             return false;
         }
 
@@ -402,8 +382,8 @@ namespace IntelligentAgent
         private int[,] m_monsterChance;
         private int m_rowsCount;
         private int m_collsCount;
-        private bool[,] m_updatedBones;
-        private bool[,] m_updatedWings;
+        private bool[,] m_checkedBones;
+        private bool[,] m_checkedWings;
     }
     struct SearchNode
     {
